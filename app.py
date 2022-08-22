@@ -11,7 +11,7 @@ from distance import *
 st.markdown("""
 # Distance measurement program for SARS-CoV-2 Spike PDB structures.
 
-This program measures a distance between two residues atoms in all SARS-CoV-2 (Uniprot ID P0DTC2) Spike structures deposited to PDB.
+This program measures a distance between two residues' atoms in all SARS-CoV-2 (Uniprot ID P0DTC2) Spike structures deposited to PDB.
 
 ---
 """)
@@ -19,9 +19,9 @@ This program measures a distance between two residues atoms in all SARS-CoV-2 (U
 # Sidebar
 with st.sidebar.header('Enter residues between which you measure distance.'):
     resid_1 = st.sidebar.text_input("Input residue 1 id")
-    atom_1 = st.sidebar.text_input("Input residue 1 atom name")
+    atom_1 = st.sidebar.text_input("Input residue 1 atom name. For example CA")
     resid_2 = st.sidebar.text_input("Input residue 2 id")
-    atom_2 = st.sidebar.text_input("Input residue 2 atom name")
+    atom_2 = st.sidebar.text_input("Input residue 2 atom name. For example N")
 
     st.sidebar.markdown("""
 """)

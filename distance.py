@@ -117,6 +117,8 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2):
                 chains_ordered.append('C')
                 chains_ordered.append('B')
 
+            resid_1 = resid_1.upper()
+            resid_2 = resid_2.upper()
         # measure the distance of interest
             for j in range(0,3):
                 try:
@@ -202,7 +204,8 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, flag):
             continue
 
 
-
+        resid_1 = resid_1.upper()
+        resid_2 = resid_2.upper()
         for chain in ['A', 'B', 'C']:
             try:
                 dist = cmd.get_distance(atom1=f'chain {chain} and i. {resid_1} and n. {atom_1}',
