@@ -155,16 +155,16 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2):
         st.header('**Incorrectly numbered pdbs**')
 
         st.write(f'There are {len(error_pdbs)} structures with 1000 ARG error in at least one chain:', str(error_pdbs))
-        f = open("IncorrectNumberingPDB.txt", "w")
-        f.write(str(error_pdbs))
-        f.close()
+        ##f = open("IncorrectNumberingPDB.txt", "w")
+        ##f.write(str(error_pdbs))
+        ##f.close()
 
         st.write(f'There are {len(missing_residue)} chains with a problem in chosen residue:', str(missing_residue))
         error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + '.txt'
-        f = open(error_file_name, "w")
-        f.write(str(missing_residue))
-        f.write(str(missing_residue_reverse))
-        f.close()
+        ##f = open(error_file_name, "w")
+        ##f.write(str(missing_residue))
+        ##f.write(str(missing_residue_reverse))
+        ##f.close()
         return dist_list, dist_list_reverse
 
 def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, flag):
@@ -217,15 +217,15 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, flag):
     st.header('**Incorrectly numbered pdbs**')
 
     st.write(f'There are {len(error_pdbs)} structures with 1000 ARG error in at least one chain:', str(error_pdbs))
-    f = open("IncorrectNumberingPDB.txt", "w")
-    f.write(str(error_pdbs))
-    f.close()
+    ##f = open("IncorrectNumberingPDB.txt", "w")
+    ##f.write(str(error_pdbs))
+    ##f.close()
 
     st.write(f'There are {len(missing_residue)} chains with a problem in chosen residue:', str(missing_residue))
     error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + '.txt'
-    f = open(error_file_name, "w")
-    f.write(str(missing_residue))
-    f.close()
+    ##f = open(error_file_name, "w")
+    ##f.write(str(missing_residue))
+    ##f.close()
     return dist_list
 
 
@@ -259,8 +259,8 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag):
     df_name = './distances/distance_' + name + '_' + flag +'.csv'
     df.to_csv(df_name)
     st.write(df)
-    plt_name = './plots/distance_' + name + '_' + flag +'.png'
-    plt.savefig(plt_name, bbox_inches='tight')
+    ##plt_name = './plots/distance_' + name + '_' + flag +'.png'
+    ##plt.savefig(plt_name, bbox_inches='tight')
     #print(f'number of corrected numbered and analyzed structures {len(distancesDict)}')
     #return distances_only
 
