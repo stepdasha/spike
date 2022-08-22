@@ -260,8 +260,8 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag):
     df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in distancesDict.items()])).transpose()
     name = str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2)
     df_name = './distances/distance_' + name + '_' + flag +'.csv'
-    ###df.to_csv(df_name)
-    ###st.write(df)
+    df.to_csv(df_name)
+    st.write(df)
     ###plt_name = './plots/distance_' + name + '_' + flag +'.png'
     ###plt.savefig(plt_name, bbox_inches='tight')
 
