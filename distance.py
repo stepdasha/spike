@@ -41,11 +41,16 @@ def get_spike_ids(uniprot_id="P0DTC2", min_weight=400, max_resolution=4.0):
         "rcsb_entry_info.molecular_weight", greater=min_weight
     )
 
+    query_by_method = rcsb.FieldQuery(
+    	"exptl.method", exact_match= "ELECTRON MICROSCOPY"
+    )
+    
     query = rcsb.CompositeQuery(
         [
             query_by_uniprot_id,
             query_by_resolution,
             # query_by_polymer_count,
+            query_by_method,
             query_by_polymer_weight,
         ],
         "and",
@@ -158,16 +163,16 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2):
         st.header('**Incorrectly numbered pdbs**')
 
         st.write(f'There are {len(error_pdbs)} structures with 1000 ARG error in at least one chain:', str(error_pdbs))
-        ###f = open("IncorrectNumberingPDB.txt", "w")
-        ###f.write(str(error_pdbs))
-        ###f.close()
+        f = open("IncorrectNumberingPDB.txt", "w")
+        f.write(str(error_pdbs))
+        f.close()
 
         st.write(f'There are {len(missing_residue)} chains with a problem in chosen residue:', str(missing_residue))
         error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + '.txt'
-        ###f = open(error_file_name, "w")
-        ###f.write(str(missing_residue))
-        ###f.write(str(missing_residue_reverse))
-        ###f.close()
+        f = open(error_file_name, "w")
+        f.write(str(missing_residue))
+        f.write(str(missing_residue_reverse))
+        f.close()
         return dist_list, dist_list_reverse
 
 def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, flag):
@@ -215,20 +220,20 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, flag):
                                             atom2=f'chain {chain} and i. {resid_2} and n. {atom_2}')
                 dist_list[i].append(dist)
             except CmdException:
-                missing_residue.append(i)
+                missing_residue.append(i.upper())
 
     st.header('**Incorrectly numbered pdbs**')
 
     st.write(f'There are {len(error_pdbs)} structures with 1000 ARG error in at least one chain:', str(error_pdbs))
-    ###f = open("IncorrectNumberingPDB.txt", "w")
-    ###f.write(str(error_pdbs))
-    ###f.close()
+    f = open("IncorrectNumberingPDB.txt", "w")
+    f.write(str(error_pdbs))
+    f.close()
 
     st.write(f'There are {len(missing_residue)} chains with a problem in chosen residue:', str(missing_residue))
     error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + '.txt'
-    ###f = open(error_file_name, "w")
-    ###f.write(str(missing_residue))
-    ###f.close()
+    f = open(error_file_name, "w")
+    f.write(str(missing_residue))
+    f.close()
     return dist_list
 
 
@@ -262,8 +267,8 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag):
     df_name = './distances/distance_' + name + '_' + flag +'.csv'
     df.to_csv(df_name)
     st.write(df)
-    ###plt_name = './plots/distance_' + name + '_' + flag +'.png'
-    ###plt.savefig(plt_name, bbox_inches='tight')
+    plt_name = './plots/distance_' + name + '_' + flag +'.png'
+    plt.savefig(plt_name, bbox_inches='tight')
 
 
     #print(f'number of corrected numbered and analyzed structures {len(distancesDict)}')
