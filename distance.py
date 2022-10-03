@@ -83,7 +83,7 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2):
         error_pdbs = []
 
 
-        # sanity check that the numbering is correct, check if 1000 is ARG in chain A B C
+        # sanity check that the numbering is correct, check if 1126 is CYS  in chain A B C
         for i in tqdm(pdb_ids):
             chains_ordered = ['A']
             cmd.delete("*")
@@ -104,7 +104,7 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2):
 
             error_1000 = False
             for item in ['A', 'B', 'C']:
-                p1 = cmd.select("p1", f'chain {item} and i. 1000 and r. ARG and n. CA')
+                p1 = cmd.select("p1", f'chain {item} and i. 1126 and r. CYS and n. CA')
                 if p1 != 1:
                     error_pdbs.append(i.upper())
                     error_1000 = True
@@ -162,7 +162,7 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2):
 
         st.header('**Incorrectly numbered pdbs**')
 
-        st.write(f'There are {len(error_pdbs)} structures with 1000 ARG error in at least one chain:', str(error_pdbs))
+        st.write(f'There are {len(error_pdbs)} structures with 1126 CYS error in at least one chain:', str(error_pdbs))
         f = open("IncorrectNumberingPDB.txt", "w")
         f.write(str(error_pdbs))
         f.close()
@@ -202,8 +202,8 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, flag):
 
         error_1000 = False
         for item in ['A', 'B', 'C']:
-            # sanity check that the numbering is correct, check if 1000 is ARG in chain A B C
-            p1 = cmd.select("p1", f'chain {item} and i. 1000 and r. ARG and n. CA')
+            # sanity check that the numbering is correct, check if 1126 is CYS in chain A B C
+            p1 = cmd.select("p1", f'chain {item} and i. 1126 and r. CYS and n. CA')
             if p1 != 1:
                 error_pdbs.append(i.upper())
                 error_1000 = True
@@ -224,7 +224,7 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, flag):
 
     st.header('**Incorrectly numbered pdbs**')
 
-    st.write(f'There are {len(error_pdbs)} structures with 1000 ARG error in at least one chain:', str(error_pdbs))
+    st.write(f'There are {len(error_pdbs)} structures with 1126 CYS error in at least one chain:', str(error_pdbs))
     f = open("IncorrectNumberingPDB.txt", "w")
     f.write(str(error_pdbs))
     f.close()
@@ -252,15 +252,24 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag):
         os.mkdir('distances')
 
     fig = plt.figure(figsize=(15, 7.5))
-    plt.hist(np.hstack(distances_only), bins=100, color="skyblue", edgecolor='white')
+    #plt.hist(np.hstack(distances_only), bins=100, color="skyblue", edgecolor='white')
     plt.hist(np.hstack(distances_only), bins=100, color="skyblue", edgecolor='white')
     # sns.histplot(data=distances_only , binwidth=0.2)
     plt.xlabel('distance, A', fontsize=20)
-    plt.ylabel("Count", fontsize=20)
+    plt.ylabel("Chains count", fontsize=20)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
-
+    plt.title("Distance distribution histogram")
     st.pyplot(fig)
+
+    fig2 = plt.figure(figsize=(15, 7.5))
+    plt.hist(np.hstack(distances_only), bins=100, color="skyblue", edgecolor='white' , cumulative = True)
+    plt.xlabel('distance, A', fontsize=20)
+    plt.ylabel("Chains count", fontsize=20)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+    plt.title("Distance distribution cumulative histogram")
+    st.pyplot(fig2)
 
     df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in distancesDict.items()])).transpose()
     name = str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2)
@@ -279,6 +288,6 @@ def delete_PDB_folder():
 
 #pdb_ids = get_spike_ids()
 ##dist = distance(pdb_ids, 318, 'PHE', 292,  'ALA')
-#dist = distance(pdb_ids, 1000, 'ARG', 975,  'SER')
+#dist = distance(pdb_ids, 1126, 'CYS', 975,  'SER')
 #analysis(dist)
 
