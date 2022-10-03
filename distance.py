@@ -69,7 +69,7 @@ def get_spike_ids(uniprot_id="P0DTC2", min_weight=400, max_resolution=4.0):
 
 
 
-def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2):
+def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '', mutation_id = ''):
         if not os.path.exists('PDB'):
             os.mkdir('PDB')
         if not os.path.exists('error_residue'):
@@ -81,9 +81,9 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2):
         missing_residue = []
         missing_residue_reverse = []
         error_pdbs = []
+        with_mutant = []
 
 
-        # sanity check that the numbering is correct, check if 1126 is CYS  in chain A B C
         for i in tqdm(pdb_ids):
             cmd.delete("*")
             i = i.lower()
@@ -101,6 +101,9 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2):
                 # st.write("cif instead of pdb is fetched")
                 #st.write('load cif from folder')
 
+
+            # sanity check that the numbering is correct, check if 1126 is CYS  in chain A B C
+            # assign chain names
             chains = []
             for ch in cmd.get_chains(i):
                 #print(i, " has chain ", ch)
@@ -113,9 +116,19 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2):
 
             #print(i , 'has ', chains)
 
+        # only take those that had correct sequence numbering in all 3 chains
             if len(chains) !=3 :
                 error_pdbs.append(i.upper())
                 continue
+
+            # check if the sequence has a requested mutation
+            if mutation_name != '':
+                p2 = cmd.select("p2", f'chain {str(chains[0])} and i. {mutation_id} and r. {mutation_name} and n. CA')
+                if p2 != 1:
+                    continue
+                else:
+                    print('mutant')
+                    with_mutant.append(i)
 
 
         #measure 2 distances to find chains orientation (clockwise/counterclockwise)
@@ -174,21 +187,26 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2):
         f.write(str(error_pdbs))
         f.close()
 
+        if mutation_name != '':
+            st.write(f'There are {len(with_mutant)} structures with {mutation_id}{mutation_name}:', str(with_mutant))
+
         st.write(st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with a problem in chosen residue:', str(missing_residue)))
-        error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + '.txt'
+        error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id) + '.txt'
         f = open(error_file_name, "w")
         f.write(str(missing_residue))
         f.write(str(missing_residue_reverse))
         f.close()
         return dist_list, dist_list_reverse
 
-def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, flag):
+def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '', mutation_id = ''):
     if not os.path.exists('PDB'):
         os.mkdir('PDB')
 
     dist_list = collections.defaultdict(list)  # empty dictionary for future rmsd
     missing_residue = []
     error_pdbs = []
+    with_mutant = []
+
     if not os.path.exists('error_residue'):
         os.mkdir('error_residue')
 
@@ -225,7 +243,15 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, flag):
             error_pdbs.append(i.upper())
             continue
 
-
+            # check if the sequence has a requested mutation
+        if mutation_name != '':
+            p2 = cmd.select("p2", f'chain {str(chains[0])} and i. {mutation_id} and r. {mutation_name} and n. CA')
+            if p2 != 1:
+                #print('not')
+                continue
+            else:
+                print('mutant')
+                with_mutant.append(i)
 
         resid_1 = resid_1.upper()
         resid_2 = resid_2.upper()
@@ -244,6 +270,9 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, flag):
     f.write(str(error_pdbs))
     f.close()
 
+    if mutation_name != '':
+        st.write(f'There are {len(with_mutant)} structures with {mutation_id}{mutation_name}:', str(with_mutant))
+
     st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with a problem in chosen residue:', str(missing_residue))
     error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + '.txt'
     f = open(error_file_name, "w")
@@ -252,7 +281,7 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, flag):
     return dist_list
 
 
-def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag):
+def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_name = '', mutation_id= ''):
     """
     plot the histogram of distances
     """
@@ -288,7 +317,7 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag):
     st.pyplot(fig2)
 
     df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in distancesDict.items()])).transpose()
-    name = str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2)
+    name = str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id)
     df_name = './distances/distance_' + name + '_' + flag +'.csv'
     df.to_csv(df_name)
     st.write(df)
