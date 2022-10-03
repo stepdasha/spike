@@ -85,7 +85,6 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2):
 
         # sanity check that the numbering is correct, check if 1126 is CYS  in chain A B C
         for i in tqdm(pdb_ids):
-            chains_ordered = ['A']
             cmd.delete("*")
             i = i.lower()
 
@@ -102,29 +101,38 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2):
                 # st.write("cif instead of pdb is fetched")
                 #st.write('load cif from folder')
 
-            error_1000 = False
-            for item in ['A', 'B', 'C']:
-                p1 = cmd.select("p1", f'chain {item} and i. 1126 and r. CYS and n. CA')
+            chains = []
+            for ch in cmd.get_chains(i):
+                #print(i, " has chain ", ch)
+                p1 = cmd.select("p1", f'chain {ch} and i. 1126 and r. CYS and n. CA')
                 if p1 != 1:
-                    error_pdbs.append(i.upper())
-                    error_1000 = True
-                    break
-            if error_1000:
+                    #error_1000 = True
+                    continue
+                else:
+                    chains.append(ch)
+
+            #print(i , 'has ', chains)
+
+            if len(chains) !=3 :
+                error_pdbs.append(i.upper())
                 continue
 
+
         #measure 2 distances to find chains orientation (clockwise/counterclockwise)
-            dist1 = cmd.get_distance(atom1=f'chain A and i. 971 and n. CA',
-                                     atom2=f'chain B and i. 752 and n. CA')
+            chains_ordered = [chains[0]]
+            dist1 = cmd.get_distance(atom1=f'chain {chains[0]} and i. 971 and n. CA',
+                                     atom2=f'chain {chains[1]} and i. 752 and n. CA')
 
-            dist2 = cmd.get_distance(atom1=f'chain A and i. 971 and n. CA',
-                                     atom2=f'chain C and i. 752 and n. CA')
+            dist2 = cmd.get_distance(atom1=f'chain {chains[0]} and i. 971 and n. CA',
+                                     atom2=f'chain {chains[2]} and i. 752 and n. CA')
             if min(dist1, dist2) == dist1:
-                chains_ordered.append('B')
-                chains_ordered.append('C')
+                chains_ordered.append(chains[1])
+                chains_ordered.append(chains[2])
             elif min(dist1, dist2) == dist2:
-                chains_ordered.append('C')
-                chains_ordered.append('B')
+                chains_ordered.append(chains[2])
+                chains_ordered.append(chains[1])
 
+            #print(chains_ordered)
             resid_1 = resid_1.upper()
             resid_2 = resid_2.upper()
         # measure the distance of interest
@@ -135,7 +143,6 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2):
                                                 atom2=f'chain {chains_ordered[0]} and i. {resid_2} and n. {atom_2}')
                         dist_list[i].append(dist)
                     else:
-
                         dist = cmd.get_distance(atom1=f'chain {chains_ordered[j]} and i. {resid_1} and n. {atom_1}',
                                             atom2=f'chain {chains_ordered[j + 1]} and i. {resid_2} and n. {atom_2}')
                         dist_list[i].append(dist)
@@ -162,12 +169,12 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2):
 
         st.header('**Incorrectly numbered pdbs**')
 
-        st.write(f'There are {len(error_pdbs)} structures with 1126 CYS error in at least one chain:', str(error_pdbs))
+        st.write(f'There are {len(error_pdbs)} structures with 1126 not being CYS in at least one chain:', str(error_pdbs),'. Removed those from analysis.')
         f = open("IncorrectNumberingPDB.txt", "w")
         f.write(str(error_pdbs))
         f.close()
 
-        st.write(f'There are {len(missing_residue)} chains with a problem in chosen residue:', str(missing_residue))
+        st.write(st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with a problem in chosen residue:', str(missing_residue)))
         error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + '.txt'
         f = open(error_file_name, "w")
         f.write(str(missing_residue))
@@ -200,21 +207,29 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, flag):
                 cmd.fetch(i, path='./PDB/')
             #st.write("cif instead of pdb is fetched")
 
-        error_1000 = False
-        for item in ['A', 'B', 'C']:
-            # sanity check that the numbering is correct, check if 1126 is CYS in chain A B C
-            p1 = cmd.select("p1", f'chain {item} and i. 1126 and r. CYS and n. CA')
+
+# chains naming and taking only chains that have CYS 1126
+        chains = []
+        for ch in cmd.get_chains(i):
+            #print(i, " has chain ", ch)
+            p1 = cmd.select("p1", f'chain {ch} and i. 1126 and r. CYS and n. CA')
             if p1 != 1:
-                error_pdbs.append(i.upper())
-                error_1000 = True
-                break
-        if error_1000:
+                    #error_1000 = True
+                continue
+            else:
+                chains.append(ch)
+
+        #print(i , 'has ', chains)
+
+        if len(chains) !=3 :
+            error_pdbs.append(i.upper())
             continue
+
 
 
         resid_1 = resid_1.upper()
         resid_2 = resid_2.upper()
-        for chain in ['A', 'B', 'C']:
+        for chain in chains:
             try:
                 dist = cmd.get_distance(atom1=f'chain {chain} and i. {resid_1} and n. {atom_1}',
                                             atom2=f'chain {chain} and i. {resid_2} and n. {atom_2}')
@@ -224,12 +239,12 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, flag):
 
     st.header('**Incorrectly numbered pdbs**')
 
-    st.write(f'There are {len(error_pdbs)} structures with 1126 CYS error in at least one chain:', str(error_pdbs))
+    st.write(f'There are {len(error_pdbs)} structures with 1126 not being CYS in at least one chain:', str(error_pdbs),'. Removed those from analysis.')
     f = open("IncorrectNumberingPDB.txt", "w")
     f.write(str(error_pdbs))
     f.close()
 
-    st.write(f'There are {len(missing_residue)} chains with a problem in chosen residue:', str(missing_residue))
+    st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with a problem in chosen residue:', str(missing_residue))
     error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + '.txt'
     f = open(error_file_name, "w")
     f.write(str(missing_residue))
@@ -254,6 +269,7 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag):
     fig = plt.figure(figsize=(15, 7.5))
     #plt.hist(np.hstack(distances_only), bins=100, color="skyblue", edgecolor='white')
     plt.hist(np.hstack(distances_only), bins=100, color="skyblue", edgecolor='white')
+
     # sns.histplot(data=distances_only , binwidth=0.2)
     plt.xlabel('distance, A', fontsize=20)
     plt.ylabel("Chains count", fontsize=20)
@@ -263,7 +279,7 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag):
     st.pyplot(fig)
 
     fig2 = plt.figure(figsize=(15, 7.5))
-    plt.hist(np.hstack(distances_only), bins=100, color="skyblue", edgecolor='white' , cumulative = True)
+    plt.hist(np.hstack(distances_only), bins=100,  histtype='step' , cumulative = True, label='Cumulative')
     plt.xlabel('distance, A', fontsize=20)
     plt.ylabel("Chains count", fontsize=20)
     plt.xticks(fontsize=15)
