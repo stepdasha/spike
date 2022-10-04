@@ -36,12 +36,8 @@ def main():
         st.sidebar.markdown("""
     """)
 
-    with st.sidebar.header('**Specific sequence**'):
-        mutation = st.selectbox(
-            'Are you looking for structures with a specific mutation?',
+    mutation = st.sidebar.selectbox('Are you looking for structures with a specific mutation?',
             ('no', 'yes'))
-        st.sidebar.markdown("""
-    """)
 
     with st.sidebar.header(''):
         mutation_name = st.sidebar.text_input("If yes, enter a mutation aminoacid name (for example GLY). If no, leave blank.")

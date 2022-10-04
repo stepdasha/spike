@@ -127,7 +127,7 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
                 if p2 != 1:
                     continue
                 else:
-                    print('mutant')
+                    #print('mutant')
                     with_mutant.append(i)
 
 
@@ -250,7 +250,7 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = ''
                 #print('not')
                 continue
             else:
-                print('mutant')
+                #print('mutant')
                 with_mutant.append(i)
 
         resid_1 = resid_1.upper()
