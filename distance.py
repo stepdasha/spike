@@ -123,12 +123,12 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
 
             # check if the sequence has a requested mutation
             if mutation_name != '':
-                p2 = cmd.select("p2", f'chain {str(chains[0])} and i. {mutation_id} and r. {mutation_name} and n. CA')
+                p2 = cmd.select("p2", f'chain {str(chains[0])} and i. {mutation_id} and r. {mutation_name.upper()} and n. CA')
                 if p2 != 1:
                     continue
                 else:
                     #print('mutant')
-                    with_mutant.append(i)
+                    with_mutant.append(i.upper())
 
 
         #measure 2 distances to find chains orientation (clockwise/counterclockwise)
@@ -188,9 +188,9 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
         f.close()
 
         if mutation_name != '':
-            st.write(f'There are {len(with_mutant)} structures with {mutation_id}{mutation_name}:', str(with_mutant))
+            st.write(f'There are {len(with_mutant)} structures with {mutation_id}{mutation_name.upper()}:', str(with_mutant))
 
-        st.write(st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with a problem in chosen residue:', str(missing_residue)))
+        st.write(st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with missing at least one of the requested atoms:', str(missing_residue)))
         error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id) + '.txt'
         f = open(error_file_name, "w")
         f.write(str(missing_residue))
@@ -245,13 +245,13 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = ''
 
             # check if the sequence has a requested mutation
         if mutation_name != '':
-            p2 = cmd.select("p2", f'chain {str(chains[0])} and i. {mutation_id} and r. {mutation_name} and n. CA')
+            p2 = cmd.select("p2", f'chain {str(chains[0])} and i. {mutation_id} and r. {mutation_name.upper()} and n. CA')
             if p2 != 1:
                 #print('not')
                 continue
             else:
                 #print('mutant')
-                with_mutant.append(i)
+                with_mutant.append(i.upper())
 
         resid_1 = resid_1.upper()
         resid_2 = resid_2.upper()
@@ -271,10 +271,10 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = ''
     f.close()
 
     if mutation_name != '':
-        st.write(f'There are {len(with_mutant)} structures with {mutation_id}{mutation_name}:', str(with_mutant))
+        st.write(f'There are {len(with_mutant)} structures with {mutation_id}{mutation_name.upper()}:', str(with_mutant))
 
-    st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with a problem in chosen residue:', str(missing_residue))
-    error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + '.txt'
+    st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with missing at least one of the requested atoms:', str(missing_residue))
+    error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id) + '.txt'
     f = open(error_file_name, "w")
     f.write(str(missing_residue))
     f.close()
@@ -307,22 +307,29 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
     plt.title("Distance distribution histogram")
     st.pyplot(fig)
 
+    name = str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id)
+    plt_name = './plots/distance_' + name + '_' + flag + '.png'
+    plt.savefig(plt_name, bbox_inches='tight')
+
+
     fig2 = plt.figure(figsize=(15, 7.5))
-    plt.hist(np.hstack(distances_only), bins=100,  histtype='step' , cumulative = True, label='Cumulative')
+    plt.hist(np.hstack(distances_only), bins=100, histtype='step', cumulative=True, label='Cumulative', density=True)
     plt.xlabel('distance, A', fontsize=20)
-    plt.ylabel("Chains count", fontsize=20)
+    plt.ylabel("Accumulated fraction", fontsize=20)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
     plt.title("Distance distribution cumulative histogram")
     st.pyplot(fig2)
+    plt_name_cum = './plots/distance_' + name + '_' + flag + 'cumul' + '.png'
+    plt.savefig(plt_name_cum, bbox_inches='tight')
+
 
     df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in distancesDict.items()])).transpose()
-    name = str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id)
     df_name = './distances/distance_' + name + '_' + flag +'.csv'
     df.to_csv(df_name)
     st.write(df)
-    plt_name = './plots/distance_' + name + '_' + flag +'.png'
-    plt.savefig(plt_name, bbox_inches='tight')
+
+
 
 
     #print(f'number of corrected numbered and analyzed structures {len(distancesDict)}')

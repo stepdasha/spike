@@ -40,8 +40,8 @@ def main():
             ('no', 'yes'))
 
     with st.sidebar.header(''):
-        mutation_name = st.sidebar.text_input("If yes, enter a mutation aminoacid name (for example GLY). If no, leave blank.")
         mutation_id = st.sidebar.text_input("If yes, enter a mutation aminoacid id (for example 614). If no, leave blank.")
+        mutation_name = st.sidebar.text_input("If yes, enter a mutation aminoacid name (for example GLY). If no, leave blank.")
         st.sidebar.markdown("""
     """)
 
