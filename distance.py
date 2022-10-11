@@ -106,13 +106,22 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
             # assign chain names
             chains = []
             for ch in cmd.get_chains(i):
-                #print(i, " has chain ", ch)
-                p1 = cmd.select("p1", f'chain {ch} and i. 1126 and r. CYS and n. CA')
+
+                '''#print(i, " has chain ", ch)
+                p1 = cmd.select("p1",')
                 if p1 != 1:
                     #error_1000 = True
                     continue
                 else:
+                    chains.append(ch)'''
+
+                try:
+                    dist = cmd.get_distance(atom1= f'chain {ch} and i. 1126 and r. CYS and n. CA',
+                                            atom2=f'chain {ch} and i. 57 and r. PRO and n. CA')
                     chains.append(ch)
+                except CmdException:
+                    continue
+
 
             #print(i , 'has ', chains)
 
@@ -182,7 +191,7 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
 
         st.header('**Incorrectly numbered pdbs**')
 
-        st.write(f'There are {len(error_pdbs)} structures with 1126 not being CYS in at least one chain:', str(error_pdbs),'. Removed those from analysis.')
+        st.write(f'There are {len(error_pdbs)} structures with 1126 not being CYS or 57 not being a PRO in at least one chain:', str(error_pdbs),'. Removed those from analysis.')
         f = open("IncorrectNumberingPDB.txt", "w")
         f.write(str(error_pdbs))
         f.close()
@@ -229,14 +238,20 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = ''
 # chains naming and taking only chains that have CYS 1126
         chains = []
         for ch in cmd.get_chains(i):
-            #print(i, " has chain ", ch)
+            '''#print(i, " has chain ", ch)
             p1 = cmd.select("p1", f'chain {ch} and i. 1126 and r. CYS and n. CA')
             if p1 != 1:
                     #error_1000 = True
                 continue
             else:
                 chains.append(ch)
-
+            '''
+            try:
+                dist = cmd.get_distance(atom1= f'chain {ch} and i. 1126 and r. CYS and n. CA',
+                                            atom2=f'chain {ch} and i. 57 and r. PRO and n. CA')
+                chains.append(ch)
+            except CmdException:
+                continue
         #print(i , 'has ', chains)
 
         if len(chains) !=3 :
@@ -265,7 +280,7 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = ''
 
     st.header('**Incorrectly numbered pdbs**')
 
-    st.write(f'There are {len(error_pdbs)} structures with 1126 not being CYS in at least one chain:', str(error_pdbs),'. Removed those from analysis.')
+    st.write(f'There are {len(error_pdbs)} structures with 1126 not being CYS or 57 not being a PRO in at least one chain:', str(error_pdbs),'. Removed those from analysis.')
     f = open("IncorrectNumberingPDB.txt", "w")
     f.write(str(error_pdbs))
     f.close()
