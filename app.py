@@ -2,22 +2,27 @@
 
 from distance import *
 
-# Logo image
-#image = Image.open('logo.png')
 
-#st.image(image, use_column_width=True)
-
-# Page title
+# Distance measurement tool for SARS-CoV-2 Spike PDB structures.
+# Distance Landscape for SARS-CoV-2 Spike PDB structures.
 
 
 def main():
-    st.markdown("""
-    # Distance measurement tool for SARS-CoV-2 Spike PDB structures.
+    # Logo image
+    image = Image.open('logo4.jpg')
+
+    st.image(image, use_column_width=True)
+
+    st.markdown("""    
+    This program allows you to get a distribution of a distance between two amino acids' atoms in all SARS-CoV-2 Spike structures available in Protein Data Bank.
     
-    This program measures a distance between two amino acids' atoms in all SARS-CoV-2 Spike structures deposited to Protein Data Bank.
+    **Credits**
     
+    - Built in `Python` + `Streamlit` by Darya Stepanenko from [Simmerling Lab](https://www.simmerlinglab.org/research-1) at Stony Brook University.
+    - Distance calculated using `Pymol`.
     ---
     """)
+
 
     # Sidebar
     with st.sidebar.header('Enter residues between which you measure distance.'):
@@ -78,6 +83,8 @@ def main():
 
     else:
         st.info('Enter residues in the sidebar to start!')
+
+
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,5 @@
 This porgram calculates distributions of distances of PDB structures of SARS-CoV-2 Spike available on PDB.
-If you want to use it, pull it from github using the following commadn:
+If you want to use it, pull it from github using the following command:
 
 	git clone git@github.com:stepdasha/spike.git
 Create the environment called 'structure' from the file environment.yml file with the following command:

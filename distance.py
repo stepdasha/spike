@@ -14,6 +14,16 @@ import streamlit as st
 
 import pandas as pd
 import shutil
+import base64
+from PIL import Image
+
+# File download
+def filedownload(df, df_name):
+    csv = df.to_csv(index=True)
+    b64 = base64.b64encode(csv.encode()).decode()  # strings <-> bytes conversions
+    href = f'<a href="data:file/csv;base64,{b64}" download={df_name}>Download distribution</a>'
+    return href
+
 
 def get_spike_ids(uniprot_id="P0DTC2", min_weight=400, max_resolution=4.0):
     """
@@ -343,6 +353,7 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
     df_name = './distances/distance_' + name + '_' + flag +'.csv'
     df.to_csv(df_name)
     st.write(df)
+    st.markdown(filedownload(df, df_name), unsafe_allow_html=True)
 
 
 
