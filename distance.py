@@ -15,7 +15,7 @@ import streamlit as st
 import pandas as pd
 import shutil
 import base64
-from PIL import Image
+#from PIL import Image
 
 # File download
 def filedownload(df, df_name):

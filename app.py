@@ -9,9 +9,9 @@ from distance import *
 
 def main():
     # Logo image
-    image = Image.open('logo4.jpg')
+    #image = Image.open('logo4.jpg')
 
-    st.image(image, use_column_width=True)
+    st.image('logo4.jpg', use_column_width=True)
 
     st.markdown("""    
     This program allows you to get a distribution of a distance between two amino acids' atoms in all SARS-CoV-2 Spike structures available in Protein Data Bank.
