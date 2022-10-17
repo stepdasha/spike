@@ -202,9 +202,9 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
         st.header('**Incorrectly numbered pdbs**')
 
         st.write(f'There are {len(error_pdbs)} structures with 1126 not being CYS or 57 not being a PRO in at least one chain:', str(error_pdbs),'. Removed those from analysis.')
-        f = open("IncorrectNumberingPDB.txt", "w")
-        f.write(str(error_pdbs))
-        f.close()
+        #f = open("IncorrectNumberingPDB.txt", "w")
+        #f.write(str(error_pdbs))
+        #f.close()
 
         if mutation_name != '':
             st.write(f'There are {len(with_mutant)} structures with {mutation_id}{mutation_name.upper()}:', str(with_mutant))
