@@ -80,6 +80,7 @@ def get_spike_ids(uniprot_id="P0DTC2", min_weight=400, max_resolution=4.0):
 
 
 def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '', mutation_id = ''):
+
         if not os.path.exists('PDB'):
             os.mkdir('PDB')
         if not os.path.exists('error_residue'):
@@ -95,7 +96,8 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
 
 
         for i in tqdm(pdb_ids):
-            cmd.delete("*")
+            #print('object begin', cmd.get_object_list('(all)'))
+
             i = i.lower()
 
         #load structure
@@ -126,8 +128,8 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
                     chains.append(ch)'''
 
                 try:
-                    dist = cmd.get_distance(atom1= f'chain {ch} and i. 1126 and r. CYS and n. CA',
-                                            atom2=f'chain {ch} and i. 57 and r. PRO and n. CA')
+                    dist = cmd.get_distance(atom1= f'm. {i} and chain {ch} and i. 1126 and r. CYS and n. CA',
+                                            atom2=f'm. {i} and chain {ch} and i. 57 and r. PRO and n. CA')
                     chains.append(ch)
                 except CmdException:
                     continue
@@ -138,12 +140,14 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
         # only take those that had correct sequence numbering in all 3 chains
             if len(chains) !=3 :
                 error_pdbs.append(i.upper())
+                cmd.delete(i)
                 continue
 
             # check if the sequence has a requested mutation
             if mutation_name != '':
-                p2 = cmd.select("p2", f'chain {str(chains[0])} and i. {mutation_id} and r. {mutation_name.upper()} and n. CA')
+                p2 = cmd.select("p2", f'm. {i} and chain {str(chains[0])} and i. {mutation_id} and r. {mutation_name.upper()} and n. CA')
                 if p2 != 1:
+                    cmd.delete(i)
                     continue
                 else:
                     #print('mutant')
@@ -152,11 +156,11 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
 
         #measure 2 distances to find chains orientation (clockwise/counterclockwise)
             chains_ordered = [chains[0]]
-            dist1 = cmd.get_distance(atom1=f'chain {chains[0]} and i. 971 and n. CA',
-                                     atom2=f'chain {chains[1]} and i. 752 and n. CA')
+            dist1 = cmd.get_distance(atom1=f'm. {i} and chain {chains[0]} and i. 971 and n. CA',
+                                     atom2=f'm. {i} and chain {chains[1]} and i. 752 and n. CA')
 
-            dist2 = cmd.get_distance(atom1=f'chain {chains[0]} and i. 971 and n. CA',
-                                     atom2=f'chain {chains[2]} and i. 752 and n. CA')
+            dist2 = cmd.get_distance(atom1=f'm. {i} and chain {chains[0]} and i. 971 and n. CA',
+                                     atom2=f'm. {i} and chain {chains[2]} and i. 752 and n. CA')
             if min(dist1, dist2) == dist1:
                 chains_ordered.append(chains[1])
                 chains_ordered.append(chains[2])
@@ -171,12 +175,12 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
             for j in range(0,3):
                 try:
                     if j == 2 :
-                        dist = cmd.get_distance(atom1=f'chain {chains_ordered[j]} and i. {resid_1} and n. {atom_1}',
-                                                atom2=f'chain {chains_ordered[0]} and i. {resid_2} and n. {atom_2}')
+                        dist = cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[j]} and i. {resid_1} and n. {atom_1}',
+                                                atom2=f'm. {i} and chain {chains_ordered[0]} and i. {resid_2} and n. {atom_2}')
                         dist_list[i].append(dist)
                     else:
-                        dist = cmd.get_distance(atom1=f'chain {chains_ordered[j]} and i. {resid_1} and n. {atom_1}',
-                                            atom2=f'chain {chains_ordered[j + 1]} and i. {resid_2} and n. {atom_2}')
+                        dist = cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[j]} and i. {resid_1} and n. {atom_1}',
+                                            atom2=f'm. {i} and chain {chains_ordered[j + 1]} and i. {resid_2} and n. {atom_2}')
                         dist_list[i].append(dist)
                 except CmdException:
                     missing_residue.append(i.upper())
@@ -186,17 +190,20 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
             for j in range(0, 3):
                 try:
                     if j == 2:
-                        dist_reverse = cmd.get_distance(atom1=f'chain {chains_ordered[0]} and i. {resid_1} and n. {atom_1}',
-                                                atom2=f'chain {chains_ordered[j]} and i. {resid_2} and n. {atom_2}')
+                        dist_reverse = cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[0]} and i. {resid_1} and n. {atom_1}',
+                                                atom2=f'm. {i} and chain {chains_ordered[j]} and i. {resid_2} and n. {atom_2}')
                         dist_list_reverse[i].append(dist_reverse)
                     else:
 
-                        dist_reverse = cmd.get_distance(atom1=f'chain {chains_ordered[j + 1]} and i. {resid_1} and n. {atom_1}',
-                                                atom2=f'chain {chains_ordered[j]} and i. {resid_2} and n. {atom_2}')
+                        dist_reverse = cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[j + 1]} and i. {resid_1} and n. {atom_1}',
+                                                atom2=f'm. {i} and chain {chains_ordered[j]} and i. {resid_2} and n. {atom_2}')
                         dist_list_reverse[i].append(dist_reverse)
                 except CmdException:
                     missing_residue_reverse.append(i.upper())
                     # break
+            #print('object end', cmd.get_object_list('(all)'))
+            cmd.delete(i)
+
 
 
         st.header('**Incorrectly numbered pdbs**')
@@ -230,7 +237,8 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = ''
         os.mkdir('error_residue')
 
     for i in tqdm(pdb_ids):
-        cmd.delete("*")
+        #print('object begin', cmd.get_object_list('(all)'))
+        #cmd.delete("*")
         i = i.lower()
 
         if os.path.exists('./PDB/' + i + '.pdb'):
@@ -257,8 +265,8 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = ''
                 chains.append(ch)
             '''
             try:
-                dist = cmd.get_distance(atom1= f'chain {ch} and i. 1126 and r. CYS and n. CA',
-                                            atom2=f'chain {ch} and i. 57 and r. PRO and n. CA')
+                dist = cmd.get_distance(atom1= f'm. {i} and chain {ch} and i. 1126 and r. CYS and n. CA',
+                                            atom2=f'm. {i} and chain {ch} and i. 57 and r. PRO and n. CA')
                 chains.append(ch)
             except CmdException:
                 continue
@@ -266,13 +274,15 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = ''
 
         if len(chains) !=3 :
             error_pdbs.append(i.upper())
+            cmd.delete(i)
             continue
 
             # check if the sequence has a requested mutation
         if mutation_name != '':
-            p2 = cmd.select("p2", f'chain {str(chains[0])} and i. {mutation_id} and r. {mutation_name.upper()} and n. CA')
+            p2 = cmd.select("p2", f'm. {i} and chain {str(chains[0])} and i. {mutation_id} and r. {mutation_name.upper()} and n. CA')
             if p2 != 1:
                 #print('not')
+                cmd.delete(i)
                 continue
             else:
                 #print('mutant')
@@ -282,11 +292,13 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = ''
         resid_2 = resid_2.upper()
         for chain in chains:
             try:
-                dist = cmd.get_distance(atom1=f'chain {chain} and i. {resid_1} and n. {atom_1}',
-                                            atom2=f'chain {chain} and i. {resid_2} and n. {atom_2}')
+                dist = cmd.get_distance(atom1=f'm. {i} and chain {chain} and i. {resid_1} and n. {atom_1}',
+                                            atom2=f'm. {i} and chain {chain} and i. {resid_2} and n. {atom_2}')
                 dist_list[i].append(dist)
             except CmdException:
                 missing_residue.append(i.upper())
+        cmd.delete(i)
+
 
     st.header('**Incorrectly numbered pdbs**')
 
