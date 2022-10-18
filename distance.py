@@ -86,8 +86,8 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
         with pymol2.PyMOL() as pymol_session:
             if not os.path.exists('PDB'):
                 os.mkdir('PDB')
-            if not os.path.exists('error_residue'):
-                os.mkdir('error_residue')
+            ##if not os.path.exists('error_residue'):
+            ##    os.mkdir('error_residue')
 
 
             dist_list = collections.defaultdict(list)  # empty dictionary for future rmsd
@@ -209,24 +209,24 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
                         # break
                 #print('object end', cmd.get_object_list('(all)'))
                 pymol_session.cmd.delete(i)
-
+            pymol_session.cmd.delete("*")
 
         st.header('**Incorrectly numbered pdbs**')
 
         st.write(f'There are {len(error_pdbs)} structures with 1126 not being CYS or 57 not being a PRO in at least one chain:', str(error_pdbs),'. Removed those from analysis.')
-        #f = open("IncorrectNumberingPDB.txt", "w")
-        #f.write(str(error_pdbs))
-        #f.close()
+        ##f = open("IncorrectNumberingPDB.txt", "w")
+        ##f.write(str(error_pdbs))
+        ##f.close()
 
         if mutation_name != '':
             st.write(f'There are {len(with_mutant)} structures with {mutation_id}{mutation_name.upper()}:', str(with_mutant))
 
         st.write(st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with missing at least one of the requested atoms:', str(missing_residue)))
-        error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id) + '.txt'
-        f = open(error_file_name, "w")
-        f.write(str(missing_residue))
-        f.write(str(missing_residue_reverse))
-        f.close()
+        ##error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id) + '.txt'
+        ##f = open(error_file_name, "w")
+        ##f.write(str(missing_residue))
+        ##f.write(str(missing_residue_reverse))
+        ##f.close()
         return dist_list, dist_list_reverse
 
 def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '', mutation_id = ''):
@@ -240,8 +240,8 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = ''
         error_pdbs = []
         with_mutant = []
         len_pdbid = len(pdb_ids)
-        if not os.path.exists('error_residue'):
-            os.mkdir('error_residue')
+        ##if not os.path.exists('error_residue'):
+        ##    os.mkdir('error_residue')
 
         my_bar = st.progress(0)
         for count, i in enumerate(pdb_ids):
@@ -306,24 +306,25 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = ''
                     dist_list[i].append(dist)
                 except CmdException:
                     missing_residue.append(i.upper())
-                    
+
             pymol_session.cmd.delete(i)
+        pymol_session.cmd.delete("*")
 
     st.header('**Incorrectly numbered pdbs**')
 
     st.write(f'There are {len(error_pdbs)} structures with 1126 not being CYS or 57 not being a PRO in at least one chain:', str(error_pdbs),'. Removed those from analysis.')
-    f = open("IncorrectNumberingPDB.txt", "w")
-    f.write(str(error_pdbs))
-    f.close()
+    ##f = open("IncorrectNumberingPDB.txt", "w")
+    ##f.write(str(error_pdbs))
+    ##f.close()
 
     if mutation_name != '':
         st.write(f'There are {len(with_mutant)} structures with {mutation_id}{mutation_name.upper()}:', str(with_mutant))
 
     st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with missing at least one of the requested atoms:', str(missing_residue))
-    error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id) + '.txt'
-    f = open(error_file_name, "w")
-    f.write(str(missing_residue))
-    f.close()
+    ##error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id) + '.txt'
+    ##f = open(error_file_name, "w")
+    ##f.write(str(missing_residue))
+    ##f.close()
     return dist_list
 
 
@@ -335,11 +336,11 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
 
     st.write(f'Number of structures with at least one analyzed chain {len(distancesDict)}')
 
-    if not os.path.exists('plots'):
-        os.mkdir('plots')
+    ##if not os.path.exists('plots'):
+    ##    os.mkdir('plots')
 
-    if not os.path.exists('distances'):
-        os.mkdir('distances')
+    ##if not os.path.exists('distances'):
+    ##    os.mkdir('distances')
 
     fig = plt.figure(figsize=(15, 7.5))
     #plt.hist(np.hstack(distances_only), bins=100, color="skyblue", edgecolor='white')
@@ -354,8 +355,8 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
     st.pyplot(fig)
 
     name = str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id)
-    plt_name = './plots/distance_' + name + '_' + flag + '.png'
-    plt.savefig(plt_name, bbox_inches='tight')
+    ##plt_name = './plots/distance_' + name + '_' + flag + '.png'
+    ##plt.savefig(plt_name, bbox_inches='tight')
 
 
     fig2 = plt.figure(figsize=(15, 7.5))
@@ -366,13 +367,13 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
     plt.yticks(fontsize=15)
     #plt.title("Distance distribution cumulative histogram")
     st.pyplot(fig2)
-    plt_name_cum = './plots/distance_' + name + '_' + flag + 'cumul' + '.png'
-    plt.savefig(plt_name_cum, bbox_inches='tight')
+    ##plt_name_cum = './plots/distance_' + name + '_' + flag + 'cumul' + '.png'
+    ##plt.savefig(plt_name_cum, bbox_inches='tight')
 
 
     df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in distancesDict.items()])).transpose()
     df_name = './distances/distance_' + name + '_' + flag +'.csv'
-    df.to_csv(df_name)
+    ##df.to_csv(df_name)
     st.write(df)
     st.markdown(filedownload(df, df_name), unsafe_allow_html=True)
 
@@ -382,8 +383,8 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
     #print(f'number of corrected numbered and analyzed structures {len(distancesDict)}')
     #return distances_only
 
-def delete_PDB_folder():
-        shutil.rmtree('./PDB')
+##def delete_PDB_folder():
+##        shutil.rmtree('./PDB')
 
 #pdb_ids = get_spike_ids()
 ##dist = distance(pdb_ids, 318, 'PHE', 292,  'ALA')
