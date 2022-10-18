@@ -15,6 +15,7 @@ import streamlit as st
 import pandas as pd
 import shutil
 import base64
+
 #from PIL import Image
 
 # File download
@@ -74,7 +75,7 @@ def get_spike_ids(uniprot_id="P0DTC2", min_weight=400, max_resolution=4.0):
     #      f"resolution less than or equal to {max_resolution} with mass more than or equal to {min_weight}: {len(pdb_ids)}")
     #print("Selected PDB IDs:\n", *pdb_ids)
     st.write(f"Number of spike structures on  {today.year}-{today.month}-{today.day} with "
-          f"resolution less than or equal to {max_resolution}A with mass more than or equal to {min_weight}: {len(pdb_ids)}")
+          f"resolution less than or equal to {max_resolution}A with mass more than or equal to {min_weight}kDa: {len(pdb_ids)}")
     return (pdb_ids)
 
 
@@ -94,9 +95,12 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
         error_pdbs = []
         with_mutant = []
 
-
-        for i in tqdm(pdb_ids):
-            #print('object begin', cmd.get_object_list('(all)'))
+        len_pdbid = len(pdb_ids)
+        my_bar = st.progress(0)
+        for count, i in enumerate(pdb_ids):
+            # print('object begin', cmd.get_object_list('(all)'))
+            # cmd.delete("*")
+            my_bar.progress((count + 1) / len_pdbid)
 
             i = i.lower()
 
@@ -225,6 +229,7 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
         return dist_list, dist_list_reverse
 
 def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '', mutation_id = ''):
+
     if not os.path.exists('PDB'):
         os.mkdir('PDB')
 
@@ -232,13 +237,15 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = ''
     missing_residue = []
     error_pdbs = []
     with_mutant = []
-
+    len_pdbid = len(pdb_ids)
     if not os.path.exists('error_residue'):
         os.mkdir('error_residue')
 
-    for i in tqdm(pdb_ids):
+    my_bar = st.progress(0)
+    for count, i in enumerate(pdb_ids):
         #print('object begin', cmd.get_object_list('(all)'))
         #cmd.delete("*")
+        my_bar.progress((count + 1)/len_pdbid)
         i = i.lower()
 
         if os.path.exists('./PDB/' + i + '.pdb'):
@@ -249,7 +256,7 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = ''
             file = cmd.fetch(i, path='./PDB/', type='pdb')
             #st.write(file)
             if  file != i:
-                cmd.fetch(i, path='./PDB/')
+                cmd.fetch(i, path='./PDB/', quiet =1)
             #st.write("cif instead of pdb is fetched")
 
 
@@ -298,7 +305,6 @@ def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = ''
             except CmdException:
                 missing_residue.append(i.upper())
         cmd.delete(i)
-
 
     st.header('**Incorrectly numbered pdbs**')
 
