@@ -336,44 +336,44 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
 
     st.write(f'Number of structures with at least one analyzed chain {len(distancesDict)}')
 
-    ##if not os.path.exists('plots'):
-    ##    os.mkdir('plots')
+    #if not os.path.exists('plots'):
+    #    os.mkdir('plots')
 
-    ##if not os.path.exists('distances'):
-    ##    os.mkdir('distances')
+    #if not os.path.exists('distances'):
+    #    os.mkdir('distances')
 
     fig = plt.figure(figsize=(15, 7.5))
     #plt.hist(np.hstack(distances_only), bins=100, color="skyblue", edgecolor='white')
     plt.hist(np.hstack(distances_only), bins=100, color="skyblue", edgecolor='white')
 
     # sns.histplot(data=distances_only , binwidth=0.2)
-    plt.xlabel('distance, A', fontsize=20)
-    plt.ylabel("Chains count", fontsize=20)
-    plt.xticks(fontsize=15)
-    plt.yticks(fontsize=15)
+    plt.xlabel('distance, A', fontsize=32)
+    plt.ylabel("Chains count", fontsize=32)
+    plt.xticks(fontsize=25)
+    plt.yticks(fontsize=25)
     #plt.title("Distance distribution histogram")
     st.pyplot(fig)
 
     name = str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id)
-    ##plt_name = './plots/distance_' + name + '_' + flag + '.png'
-    ##plt.savefig(plt_name, bbox_inches='tight')
+    #plt_name = './plots/distance_' + name + '_' + flag + '.png'
+    #plt.savefig(plt_name, bbox_inches='tight')
 
 
     fig2 = plt.figure(figsize=(15, 7.5))
     plt.hist(np.hstack(distances_only), bins=100, histtype='step', cumulative=True, label='Cumulative', density=True)
-    plt.xlabel('distance, A', fontsize=20)
-    plt.ylabel("Accumulated fraction", fontsize=20)
-    plt.xticks(fontsize=15)
-    plt.yticks(fontsize=15)
+    plt.xlabel('distance, A', fontsize=32)
+    plt.ylabel("Cumulative frequency", fontsize=32)
+    plt.xticks(fontsize=25)
+    plt.yticks(fontsize=25)
     #plt.title("Distance distribution cumulative histogram")
     st.pyplot(fig2)
-    ##plt_name_cum = './plots/distance_' + name + '_' + flag + 'cumul' + '.png'
-    ##plt.savefig(plt_name_cum, bbox_inches='tight')
+    #plt_name_cum = './plots/distance_' + name + '_' + flag + 'cumul' + '.png'
+    #plt.savefig(plt_name_cum, bbox_inches='tight')
 
 
     df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in distancesDict.items()])).transpose()
     df_name = './distances/distance_' + name + '_' + flag +'.csv'
-    ##df.to_csv(df_name)
+    #df.to_csv(df_name)
     st.write(df)
     st.markdown(filedownload(df, df_name), unsafe_allow_html=True)
 
