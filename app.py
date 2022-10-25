@@ -59,18 +59,14 @@ def main():
         #    pdb_ids_updated = pdb_load_check(pdb_ids)
 
         with st.spinner("Measuring distance"):
-            if option == 'different':
-                #dist, dist_reverse = distance_dif(pdb_ids_updated, resid_1, resid_2, atom_1, atom_2)
-                dist, dist_reverse = distance_dif(pdb_ids, resid_1, resid_2, atom_1, atom_2, mutation_name, mutation_id)
+                dist, dist_reverse = distance_dif(pdb_ids, resid_1, resid_2, atom_1, atom_2, mutation_name, mutation_id, flag = option)
 
                 st.header('**Histogram of distances**')
-                analysis(dist, resid_1, atom_1, resid_2, atom_2, 'diff1', mutation_name, mutation_id)
-                analysis(dist_reverse, resid_1, atom_1, resid_2, atom_2, 'diff2', mutation_name, mutation_id)
-
-            elif option == 'same':
-                dist = distance_same(pdb_ids, resid_1, resid_2, atom_1, atom_2, mutation_name, mutation_id)
-                st.header('**Histogram of distances**')
-                analysis(dist, resid_1, atom_1, resid_2, atom_2, 'same', mutation_name, mutation_id)
+                if option == 'different':
+                    analysis(dist, resid_1, atom_1, resid_2, atom_2, 'diff1', mutation_name, mutation_id)
+                    analysis(dist_reverse, resid_1, atom_1, resid_2, atom_2, 'diff2', mutation_name, mutation_id)
+                elif option == 'same':
+                    analysis(dist, resid_1, atom_1, resid_2, atom_2, 'same', mutation_name, mutation_id)
 
         #uncomment if want to delete all PDB files
         #delete_PDB_folder()

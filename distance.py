@@ -82,7 +82,7 @@ def get_spike_ids(uniprot_id="P0DTC2", min_weight=400, max_resolution=4.0):
 
 
 
-def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '', mutation_id = ''):
+def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '', mutation_id = '', flag = 'same'):
         with pymol2.PyMOL() as pymol_session:
             if not os.path.exists('PDB'):
                 os.mkdir('PDB')
@@ -160,54 +160,68 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
                         with_mutant.append(i.upper())
 
 
-            #measure 2 distances to find chains orientation (clockwise/counterclockwise)
-                chains_ordered = [chains[0]]
-                dist1 = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains[0]} and i. 971 and n. CA',
-                                         atom2=f'm. {i} and chain {chains[1]} and i. 752 and n. CA')
-
-                dist2 = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains[0]} and i. 971 and n. CA',
-                                         atom2=f'm. {i} and chain {chains[2]} and i. 752 and n. CA')
-                if min(dist1, dist2) == dist1:
-                    chains_ordered.append(chains[1])
-                    chains_ordered.append(chains[2])
-                elif min(dist1, dist2) == dist2:
-                    chains_ordered.append(chains[2])
-                    chains_ordered.append(chains[1])
-
                 #print(chains_ordered)
                 resid_1 = resid_1.upper()
                 resid_2 = resid_2.upper()
-            # measure the distance of interest
-                for j in range(0,3):
-                    try:
-                        if j == 2 :
-                            dist = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[j]} and i. {resid_1} and n. {atom_1}',
-                                                    atom2=f'm. {i} and chain {chains_ordered[0]} and i. {resid_2} and n. {atom_2}')
-                            dist_list[i].append(dist)
-                        else:
-                            dist = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[j]} and i. {resid_1} and n. {atom_1}',
-                                                atom2=f'm. {i} and chain {chains_ordered[j + 1]} and i. {resid_2} and n. {atom_2}')
-                            dist_list[i].append(dist)
-                    except CmdException:
-                        missing_residue.append(i.upper())
-                        #break
 
-                #test for the second plot in other direction
-                for j in range(0, 3):
-                    try:
-                        if j == 2:
-                            dist_reverse = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[0]} and i. {resid_1} and n. {atom_1}',
-                                                    atom2=f'm. {i} and chain {chains_ordered[j]} and i. {resid_2} and n. {atom_2}')
-                            dist_list_reverse[i].append(dist_reverse)
-                        else:
+                if flag == 'different':
+                #measure 2 distances to find chains orientation (clockwise/counterclockwise)
+                    chains_ordered = [chains[0]]
+                    dist1 = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains[0]} and i. 971 and n. CA',
+                                             atom2=f'm. {i} and chain {chains[1]} and i. 752 and n. CA')
 
-                            dist_reverse = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[j + 1]} and i. {resid_1} and n. {atom_1}',
-                                                    atom2=f'm. {i} and chain {chains_ordered[j]} and i. {resid_2} and n. {atom_2}')
-                            dist_list_reverse[i].append(dist_reverse)
-                    except CmdException:
-                        missing_residue_reverse.append(i.upper())
-                        # break
-                #print('object end', cmd.get_object_list('(all)'))
+                    dist2 = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains[0]} and i. 971 and n. CA',
+                                             atom2=f'm. {i} and chain {chains[2]} and i. 752 and n. CA')
+                    if min(dist1, dist2) == dist1:
+                        chains_ordered.append(chains[1])
+                        chains_ordered.append(chains[2])
+                    elif min(dist1, dist2) == dist2:
+                        chains_ordered.append(chains[2])
+                        chains_ordered.append(chains[1])
+
+
+
+                # measure the distance of interest
+                    for j in range(0,3):
+                        try:
+                            if j == 2 :
+                                dist = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[j]} and i. {resid_1} and n. {atom_1}',
+                                                        atom2=f'm. {i} and chain {chains_ordered[0]} and i. {resid_2} and n. {atom_2}')
+                                dist_list[i].append(dist)
+                            else:
+                                dist = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[j]} and i. {resid_1} and n. {atom_1}',
+                                                    atom2=f'm. {i} and chain {chains_ordered[j + 1]} and i. {resid_2} and n. {atom_2}')
+                                dist_list[i].append(dist)
+                        except CmdException:
+                            missing_residue.append(i.upper())
+                            #break
+
+                    #test for the second plot in other direction
+                    for j in range(0, 3):
+                        try:
+                            if j == 2:
+                                dist_reverse = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[0]} and i. {resid_1} and n. {atom_1}',
+                                                        atom2=f'm. {i} and chain {chains_ordered[j]} and i. {resid_2} and n. {atom_2}')
+                                dist_list_reverse[i].append(dist_reverse)
+                            else:
+                                dist_reverse = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[j + 1]} and i. {resid_1} and n. {atom_1}',
+                                                        atom2=f'm. {i} and chain {chains_ordered[j]} and i. {resid_2} and n. {atom_2}')
+                                dist_list_reverse[i].append(dist_reverse)
+                        except CmdException:
+                            missing_residue_reverse.append(i.upper())
+                            # break
+                    #print('object end', cmd.get_object_list('(all)'))
+
+                elif flag == 'same':
+                    for chain in chains:
+                        try:
+                            dist = pymol_session.cmd.get_distance(
+                                atom1=f'm. {i} and chain {chain} and i. {resid_1} and n. {atom_1}',
+                                atom2=f'm. {i} and chain {chain} and i. {resid_2} and n. {atom_2}')
+                            dist_list[i].append(dist)
+                        except CmdException:
+                            missing_residue.append(i.upper())
+
                 pymol_session.cmd.delete(i)
             pymol_session.cmd.delete("*")
 
@@ -228,104 +242,6 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
         ##f.write(str(missing_residue_reverse))
         ##f.close()
         return dist_list, dist_list_reverse
-
-def distance_same(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '', mutation_id = ''):
-    with pymol2.PyMOL() as pymol_session:
-
-        if not os.path.exists('PDB'):
-            os.mkdir('PDB')
-
-        dist_list = collections.defaultdict(list)  # empty dictionary for future rmsd
-        missing_residue = []
-        error_pdbs = []
-        with_mutant = []
-        len_pdbid = len(pdb_ids)
-        ##if not os.path.exists('error_residue'):
-        ##    os.mkdir('error_residue')
-
-        my_bar = st.progress(0)
-        for count, i in enumerate(pdb_ids):
-            #print('object begin', cmd.get_object_list('(all)'))
-            #cmd.delete("*")
-            my_bar.progress((count + 1)/len_pdbid)
-            i = i.lower()
-
-            if os.path.exists('./PDB/' + i + '.pdb'):
-                pymol_session.cmd.load("./PDB/" + i + ".pdb")
-            elif os.path.exists('./PDB/' + i + '.cif') :
-                pymol_session.cmd.load("./PDB/" + i + ".cif")
-            else:
-                file = pymol_session.cmd.fetch(i, path='./PDB/', type='pdb')
-                #st.write(file)
-                if  file != i:
-                    pymol_session.cmd.fetch(i, path='./PDB/', quiet =1)
-                #st.write("cif instead of pdb is fetched")
-
-
-    # chains naming and taking only chains that have CYS 1126
-            chains = []
-            for ch in pymol_session.cmd.get_chains(i):
-                '''#print(i, " has chain ", ch)
-                p1 = cmd.select("p1", f'chain {ch} and i. 1126 and r. CYS and n. CA')
-                if p1 != 1:
-                        #error_1000 = True
-                    continue
-                else:
-                    chains.append(ch)
-                '''
-                try:
-                    dist = pymol_session.cmd.get_distance(atom1= f'm. {i} and chain {ch} and i. 1126 and r. CYS and n. CA',
-                                                atom2=f'm. {i} and chain {ch} and i. 57 and r. PRO and n. CA')
-                    chains.append(ch)
-                except CmdException:
-                    continue
-            #print(i , 'has ', chains)
-
-            if len(chains) !=3 :
-                error_pdbs.append(i.upper())
-                pymol_session.cmd.delete(i)
-                continue
-
-                # check if the sequence has a requested mutation
-            if mutation_name != '':
-                p2 = pymol_session.cmd.select("p2", f'm. {i} and chain {str(chains[0])} and i. {mutation_id} and r. {mutation_name.upper()} and n. CA')
-                if p2 != 1:
-                    #print('not')
-                    pymol_session.cmd.delete(i)
-                    continue
-                else:
-                    #print('mutant')
-                    with_mutant.append(i.upper())
-
-            resid_1 = resid_1.upper()
-            resid_2 = resid_2.upper()
-            for chain in chains:
-                try:
-                    dist = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chain} and i. {resid_1} and n. {atom_1}',
-                                                atom2=f'm. {i} and chain {chain} and i. {resid_2} and n. {atom_2}')
-                    dist_list[i].append(dist)
-                except CmdException:
-                    missing_residue.append(i.upper())
-
-            pymol_session.cmd.delete(i)
-        pymol_session.cmd.delete("*")
-
-    st.header('**Incorrectly numbered pdbs**')
-
-    st.write(f'There are {len(error_pdbs)} structures with 1126 not being CYS or 57 not being a PRO in at least one chain:', str(error_pdbs),'. Removed those from analysis.')
-    ##f = open("IncorrectNumberingPDB.txt", "w")
-    ##f.write(str(error_pdbs))
-    ##f.close()
-
-    if mutation_name != '':
-        st.write(f'There are {len(with_mutant)} structures with {mutation_id}{mutation_name.upper()}:', str(with_mutant))
-
-    st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with missing at least one of the requested atoms:', str(missing_residue))
-    ##error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id) + '.txt'
-    ##f = open(error_file_name, "w")
-    ##f.write(str(missing_residue))
-    ##f.close()
-    return dist_list
 
 
 def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_name = '', mutation_id= ''):
