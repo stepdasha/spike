@@ -187,11 +187,10 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
                             if j == 2 :
                                 dist = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[j]} and i. {resid_1} and n. {atom_1}',
                                                         atom2=f'm. {i} and chain {chains_ordered[0]} and i. {resid_2} and n. {atom_2}')
-                                dist_list[i].append(dist)
                             else:
                                 dist = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[j]} and i. {resid_1} and n. {atom_1}',
                                                     atom2=f'm. {i} and chain {chains_ordered[j + 1]} and i. {resid_2} and n. {atom_2}')
-                                dist_list[i].append(dist)
+                            dist_list[i].append(dist)
                         except CmdException:
                             missing_residue.append(i.upper())
                             #break
@@ -202,11 +201,10 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
                             if j == 2:
                                 dist_reverse = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[0]} and i. {resid_1} and n. {atom_1}',
                                                         atom2=f'm. {i} and chain {chains_ordered[j]} and i. {resid_2} and n. {atom_2}')
-                                dist_list_reverse[i].append(dist_reverse)
                             else:
                                 dist_reverse = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[j + 1]} and i. {resid_1} and n. {atom_1}',
                                                         atom2=f'm. {i} and chain {chains_ordered[j]} and i. {resid_2} and n. {atom_2}')
-                                dist_list_reverse[i].append(dist_reverse)
+                            dist_list_reverse[i].append(dist_reverse)
                         except CmdException:
                             missing_residue_reverse.append(i.upper())
                             # break
