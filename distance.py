@@ -18,6 +18,10 @@ import base64
 
 import pymol2
 
+
+import biotite.structure.io as strucio
+import biotite.structure as struc
+import os
 #from PIL import Image
 
 # File download
@@ -81,9 +85,7 @@ def get_spike_ids(uniprot_id="P0DTC2", min_weight=400, max_resolution=4.0):
     return (pdb_ids)
 
 
-
 def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '', mutation_id = '', flag = 'same'):
-        with pymol2.PyMOL() as pymol_session:
             if not os.path.exists('PDB'):
                 os.mkdir('PDB')
             ##if not os.path.exists('error_residue'):
@@ -105,141 +107,137 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
                 my_bar.progress((count + 1) / len_pdbid)
 
                 i = i.lower()
+            #download structure
+                try:
+                    file = rcsb.fetch(i, "pdb", target_path = "PDB/")
+                    #print('pdb fetched ')
+                except :
+                    file = rcsb.fetch(i, "cif", target_path = "PDB/")
+                    #print('cif fetched ')
 
-            #load structure
-                if os.path.exists('./PDB/' + i + '.pdb'):
-                    pymol_session.cmd.load("./PDB/" + i + ".pdb")
-                elif os.path.exists('./PDB/' + i + '.cif'):
-                    pymol_session.cmd.load("./PDB/" + i + ".cif")
-                else:
-                    file = pymol_session.cmd.fetch(i, path='./PDB/', type='pdb')
-                    # st.write(file)
-                    if file != i:
-                        pymol_session.cmd.fetch(i, path='./PDB/')
-                    # st.write("cif instead of pdb is fetched")
-                    #st.write('load cif from folder')
+            # laod strcutrues to pycharm
+                protein = strucio.load_structure(file)
+                #print(np.unique(protein.chain_id))
 
-
-                # sanity check that the numbering is correct, check if 1126 is CYS  in chain A B C
-                # assign chain names
+                # sanity check that the numbering is correct, check if 1126 is CYS  in chains and 57 is PRO.
+                # take those chains only
                 chains = []
-                for ch in pymol_session.cmd.get_chains(i):
-
-                    '''#print(i, " has chain ", ch)
-                    p1 = cmd.select("p1",')
-                    if p1 != 1:
-                        #error_1000 = True
+                for ch in np.unique(protein.chain_id):
+                    sel_cys = protein[(protein.chain_id == ch) & (protein.res_name == 'CYS')  & (protein.res_id == 1126)][:]
+                    sel_pro = protein[(protein.chain_id == ch) & (protein.res_name == 'PRO')  & (protein.res_id == 57)][:]
+                    if len(sel_cys) == 0 or len(sel_pro) == 0:
+                        #print('skip pdb', i)
                         continue
                     else:
-                        chains.append(ch)'''
-
-                    try:
-                        dist = pymol_session.cmd.get_distance(atom1= f'm. {i} and chain {ch} and i. 1126 and r. CYS and n. CA',
-                                                atom2=f'm. {i} and chain {ch} and i. 57 and r. PRO and n. CA')
                         chains.append(ch)
-                    except CmdException:
-                        continue
 
+               # print('for pdb', i, 'there are', len(chains), 'chains')
 
-                #print(i , 'has ', chains)
 
             # only take those that had correct sequence numbering in all 3 chains
                 if len(chains) !=3 :
                     error_pdbs.append(i.upper())
-                    pymol_session.cmd.delete(i)
+                    #print('skip', i)
                     continue
-
+                #print(chains)
                 # check if the sequence has a requested mutation
                 if mutation_name != '':
-                    p2 = pymol_session.cmd.select("p2", f'm. {i} and chain {str(chains[0])} and i. {mutation_id} and r. {mutation_name.upper()} and n. CA')
-                    if p2 != 1:
-                        pymol_session.cmd.delete(i)
+                    sel_mut = protein[(protein.chain_id == chains[0]) & (protein.res_name == mutation_name.upper()) & (protein.res_id == int(mutation_id))][:]
+                    if len(sel_mut) == 0:
                         continue
                     else:
-                        #print('mutant')
                         with_mutant.append(i.upper())
+                    #print('has mutation', i)
+
 
 
                 #print(chains_ordered)
-                resid_1 = resid_1.upper()
-                resid_2 = resid_2.upper()
+                atom_1 = atom_1.upper()
+                atom_2 = atom_2.upper()
+                resid_1 = int(resid_1)
+                resid_2 = int(resid_2)
 
                 if flag == 'different':
                 #measure 2 distances to find chains orientation (clockwise/counterclockwise)
                     chains_ordered = [chains[0]]
-                    dist1 = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains[0]} and i. 971 and n. CA',
-                                             atom2=f'm. {i} and chain {chains[1]} and i. 752 and n. CA')
+                    atom_971 = protein[(protein.chain_id == chains[0]) & (protein.res_id == 971) & (protein.atom_name == 'CA')][:]
+                    atom_752_1 = protein[(protein.chain_id == chains[1]) & (protein.res_id == 752) & (protein.atom_name == 'CA')][:]
+                    atom_752_2 = protein[(protein.chain_id == chains[2]) & (protein.res_id == 752) & (protein.atom_name == 'CA')][:]
 
-                    dist2 = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains[0]} and i. 971 and n. CA',
-                                             atom2=f'm. {i} and chain {chains[2]} and i. 752 and n. CA')
+                    dist1 = struc.distance(atom_971, atom_752_1)
+                    dist2 = struc.distance(atom_971, atom_752_2)
+                    #print('dist', dist1, dist2)
+
                     if min(dist1, dist2) == dist1:
                         chains_ordered.append(chains[1])
                         chains_ordered.append(chains[2])
+                        #print('clock')
                     elif min(dist1, dist2) == dist2:
                         chains_ordered.append(chains[2])
                         chains_ordered.append(chains[1])
-
+                        #print('counterclock')
 
 
                 # measure the distance of interest
                     for j in range(0,3):
-                        try:
+                            requested_atom1 = protein[(protein.chain_id == chains_ordered[j]) & (protein.res_id == resid_1) & (protein.atom_name == atom_1)][:]
                             if j == 2 :
-                                dist = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[j]} and i. {resid_1} and n. {atom_1}',
-                                                        atom2=f'm. {i} and chain {chains_ordered[0]} and i. {resid_2} and n. {atom_2}')
+                                requested_atom2 = protein[(protein.chain_id == chains_ordered[0]) & (protein.res_id == resid_2) & (protein.atom_name == atom_2)][:]
                             else:
-                                dist = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[j]} and i. {resid_1} and n. {atom_1}',
-                                                    atom2=f'm. {i} and chain {chains_ordered[j + 1]} and i. {resid_2} and n. {atom_2}')
-                            dist_list[i].append(dist)
-                        except CmdException:
-                            missing_residue.append(i.upper())
-                            #break
+                                requested_atom2 = protein[(protein.chain_id == chains_ordered[j + 1]) & (protein.res_id == resid_2) & (protein.atom_name == atom_2)][:]
+                            dist = struc.distance(requested_atom1, requested_atom2)
+                            #print(i, dist, requested_atom2, requested_atom1)
+                            if len(dist) == 0:
+                                missing_residue.append(i.upper())
+                            else:
+                                #print(dist)
+                                dist_list[i].append(float(dist))
 
-                    #test for the second plot in other direction
-                    for j in range(0, 3):
-                        try:
-                            if j == 2:
-                                dist_reverse = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[0]} and i. {resid_1} and n. {atom_1}',
-                                                        atom2=f'm. {i} and chain {chains_ordered[j]} and i. {resid_2} and n. {atom_2}')
-                            else:
-                                dist_reverse = pymol_session.cmd.get_distance(atom1=f'm. {i} and chain {chains_ordered[j + 1]} and i. {resid_1} and n. {atom_1}',
-                                                        atom2=f'm. {i} and chain {chains_ordered[j]} and i. {resid_2} and n. {atom_2}')
-                            dist_list_reverse[i].append(dist_reverse)
-                        except CmdException:
-                            missing_residue_reverse.append(i.upper())
-                            # break
-                    #print('object end', cmd.get_object_list('(all)'))
+                            #break
+                # test for the second plot in other direction
+                    for j in range(0,3):
+                                requested_atom2 = protein[(protein.chain_id == chains_ordered[j]) & (protein.res_id == resid_2) & (protein.atom_name == atom_2)][:]
+                                if j == 2 :
+                                    requested_atom1 = protein[(protein.chain_id == chains_ordered[0]) & (protein.res_id == resid_1) & (protein.atom_name == atom_1)][:]
+                                else:
+                                    requested_atom1 = protein[(protein.chain_id == chains_ordered[j + 1]) & (protein.res_id == resid_1) & (protein.atom_name == atom_1)][:]
+                                dist_reverse = struc.distance(requested_atom1, requested_atom2)
+
+                                if len(dist_reverse) == 0:
+                                    missing_residue_reverse.append(i.upper())
+                                else:
+                                    dist_list_reverse[i].append(float(dist_reverse))
+
+
 
                 elif flag == 'same':
                     for chain in chains:
-                        try:
-                            dist = pymol_session.cmd.get_distance(
-                                atom1=f'm. {i} and chain {chain} and i. {resid_1} and n. {atom_1}',
-                                atom2=f'm. {i} and chain {chain} and i. {resid_2} and n. {atom_2}')
-                            dist_list[i].append(dist)
-                        except CmdException:
-                            missing_residue.append(i.upper())
+                            requested_atom1 = protein[(protein.chain_id == chain) & (protein.res_id == resid_1) & (protein.atom_name == atom_1)][:]
+                            requested_atom2 = protein[(protein.chain_id == chain) & (protein.res_id == resid_2) & (protein.atom_name == atom_2)][:]
+                            dist = struc.distance(requested_atom1, requested_atom2)
+                            if len(dist) == 0:
+                                missing_residue.append(i.upper())
+                            else:
+                                dist_list[i].append(float(dist))
 
-                pymol_session.cmd.delete(i)
-            pymol_session.cmd.delete("*")
+            st.header('**Incorrectly numbered pdbs**')
 
-        st.header('**Incorrectly numbered pdbs**')
+            st.write(f'There are {len(error_pdbs)} structures with 1126 not being CYS or 57 not being a PRO in at least one chain:', str(error_pdbs),'. Removed those from analysis.')
+            ##f = open("IncorrectNumberingPDB.txt", "w")
+            ##f.write(str(error_pdbs))
+            ##f.close()
 
-        st.write(f'There are {len(error_pdbs)} structures with 1126 not being CYS or 57 not being a PRO in at least one chain:', str(error_pdbs),'. Removed those from analysis.')
-        ##f = open("IncorrectNumberingPDB.txt", "w")
-        ##f.write(str(error_pdbs))
-        ##f.close()
+            if mutation_name != '':
+                st.write(f'There are {len(with_mutant)} structures with {mutation_id}{mutation_name.upper()}:', str(with_mutant))
 
-        if mutation_name != '':
-            st.write(f'There are {len(with_mutant)} structures with {mutation_id}{mutation_name.upper()}:', str(with_mutant))
+            st.write(st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with missing at least one of the requested atoms:', str(missing_residue)))
+            ##error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id) + '.txt'
+            ##f = open(error_file_name, "w")
+            ##f.write(str(missing_residue))
+            ##f.write(str(missing_residue_reverse))
+            ##f.close()
 
-        st.write(st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with missing at least one of the requested atoms:', str(missing_residue)))
-        ##error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id) + '.txt'
-        ##f = open(error_file_name, "w")
-        ##f.write(str(missing_residue))
-        ##f.write(str(missing_residue_reverse))
-        ##f.close()
-        return dist_list, dist_list_reverse
+            return dist_list, dist_list_reverse
 
 
 def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_name = '', mutation_id= ''):

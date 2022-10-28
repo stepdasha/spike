@@ -9,4 +9,4 @@ dependencies:
 - numpy=1.22.3
 - streamlit=1.11.1
 - pandas=1.4.2
-- biotite=0.34.0
+- biotite=0.34.1
