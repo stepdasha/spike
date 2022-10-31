@@ -12,7 +12,7 @@ import numpy as np
 import streamlit as st
 
 import pandas as pd
-import shutil
+#import shutil
 import base64
 
 #import pymol2
