@@ -77,13 +77,39 @@ def get_spike_ids(uniprot_id="P0DTC2", min_weight=400, max_resolution=4.0):
           f"resolution less than or equal to {max_resolution}A with mass more than or equal to {min_weight}kDa: {len(pdb_ids)}")
     return (pdb_ids)
 
+@st.cache(suppress_st_warning=True)
+def pdb_files_loader(pdb_ids):
+    if not os.path.exists('PDB'):
+        os.mkdir('PDB')
+
+    len_pdbid = len(pdb_ids)
+    my_bar = st.progress(0)
+
+    proteins = {}
+    for count, i in enumerate(pdb_ids):
+        # print('object begin', cmd.get_object_list('(all)'))
+        # cmd.delete("*")
+        my_bar.progress((count + 1) / len_pdbid)
+
+        i = i.lower()
+        # download structure
+        try:
+            file = rcsb.fetch(i, "pdb", target_path="PDB/")
+            # print('pdb fetched ')
+        except:
+            file = rcsb.fetch(i, "cif", target_path="PDB/")
+            # print('cif fetched ')
+
+        # laod strcutrues to pycharm
+        proteins[str(i)] =  strucio.load_structure(file)
+        #proteins.append(strucio.load_structure(file))
+    return proteins
+
+
 
 def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '', mutation_id = '', flag = 'same'):
-            if not os.path.exists('PDB'):
-                os.mkdir('PDB')
-            ##if not os.path.exists('error_residue'):
-            ##    os.mkdir('error_residue')
-
+            proteins = pdb_files_loader(pdb_ids)
+            #print(proteins)
 
             dist_list = collections.defaultdict(list)  # empty dictionary for future rmsd
             dist_list_reverse = collections.defaultdict(list) # empty dictionary for future rmsd from reverse
@@ -100,16 +126,9 @@ def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '',
                 my_bar.progress((count + 1) / len_pdbid)
 
                 i = i.lower()
-            #download structure
-                try:
-                    file = rcsb.fetch(i, "pdb", target_path = "PDB/")
-                    #print('pdb fetched ')
-                except :
-                    file = rcsb.fetch(i, "cif", target_path = "PDB/")
-                    #print('cif fetched ')
 
             # laod strcutrues to pycharm
-                protein = strucio.load_structure(file)
+                protein = proteins[str(i)]
                 #print(np.unique(protein.chain_id))
 
                 # sanity check that the numbering is correct, check if 1126 is CYS  in chains and 57 is PRO.
