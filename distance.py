@@ -77,8 +77,8 @@ def get_spike_ids(uniprot_id="P0DTC2", min_weight=400, max_resolution=4.0):
           f"resolution less than or equal to {max_resolution}A with mass more than or equal to {min_weight}kDa: {len(pdb_ids)}")
     return (pdb_ids)
 
-#@st.cache(persist = True, suppress_st_warning=True, show_spinner=False)
-@st.experimental_memo(suppress_st_warning=True, show_spinner=False)
+@st.cache(suppress_st_warning=True, show_spinner=False)
+#@st.experimental_memo(suppress_st_warning=True, show_spinner=False)
 def pdb_files_loader(pdb_ids):
     if not os.path.exists('PDB'):
         os.mkdir('PDB')
@@ -108,8 +108,7 @@ def pdb_files_loader(pdb_ids):
 
 
 
-def distance_dif(pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '', mutation_id = '', flag = 'same'):
-            proteins = pdb_files_loader(pdb_ids)
+def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '', mutation_id = '', flag = 'same'):
             #print(proteins)
 
             dist_list = collections.defaultdict(list)  # empty dictionary for future rmsd

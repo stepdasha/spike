@@ -55,11 +55,14 @@ def main():
         st.header('**Available pdb structures**')
         st.write(pdb_ids)
 
+        with st.spinner("Loading PDB"):
+                proteins = pdb_files_loader(pdb_ids)
+
         #with st.spinner("Loading and checking PDBs"):
         #    pdb_ids_updated = pdb_load_check(pdb_ids)
 
         with st.spinner("Measuring distance"):
-                dist, dist_reverse = distance_dif(pdb_ids, resid_1, resid_2, atom_1, atom_2, mutation_name, mutation_id, flag = option)
+                dist, dist_reverse = distance_dif( proteins, pdb_ids, resid_1, resid_2, atom_1, atom_2, mutation_name, mutation_id, flag = option)
 
                 st.header('**Histogram of distances**')
                 if option == 'different':
