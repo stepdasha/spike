@@ -3,7 +3,7 @@
 
 import biotite.database.rcsb as rcsb
 import datetime
-from pymol import *
+#from pymol import *
 import collections
 #from tqdm.auto import tqdm
 import os
@@ -16,7 +16,7 @@ import pandas as pd
 import shutil
 import base64
 
-import pymol2
+#import pymol2
 
 
 import biotite.structure.io as strucio
