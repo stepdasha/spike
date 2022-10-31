@@ -3,7 +3,6 @@
 
 import biotite.database.rcsb as rcsb
 import datetime
-#from pymol import *
 import collections
 import os
 import matplotlib.pyplot as plt
@@ -12,15 +11,10 @@ import numpy as np
 import streamlit as st
 
 import pandas as pd
-#import shutil
 import base64
-
-#import pymol2
-
 
 import biotite.structure.io as strucio
 import biotite.structure as struc
-import os
 #from PIL import Image
 
 # File download
