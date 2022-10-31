@@ -5,7 +5,6 @@ import biotite.database.rcsb as rcsb
 import datetime
 #from pymol import *
 import collections
-#from tqdm.auto import tqdm
 import os
 import matplotlib.pyplot as plt
 import numpy as np
