@@ -19,7 +19,7 @@ def main():
     **Credits**
     
     - Built in `Python` + `Streamlit` by Darya Stepanenko from [Simmerling Lab](https://www.simmerlinglab.org/research-1) at Stony Brook University.
-    - Distance calculated using `Pymol`.
+    - Distance calculated using `biotite`.
     ---
     """)
 
