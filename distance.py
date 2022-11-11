@@ -200,6 +200,7 @@ def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_
                             dist = struc.distance(requested_atom1, requested_atom2)
                             #print(i, dist, requested_atom2, requested_atom1)
                             if len(dist) == 0:
+                                dist_list[i].append(None)
                                 missing_residue.append(i.upper())
                             else:
                                 #print(dist)
@@ -216,6 +217,7 @@ def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_
                                 dist_reverse = struc.distance(requested_atom1, requested_atom2)
 
                                 if len(dist_reverse) == 0:
+                                    dist_list_reverse[i].append(None)
                                     missing_residue_reverse.append(i.upper())
                                 else:
                                     dist_list_reverse[i].append(float(dist_reverse))
@@ -228,6 +230,7 @@ def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_
                             requested_atom2 = protein[(protein.chain_id == chain) & (protein.res_id == resid_2) & (protein.atom_name == atom_2)][:]
                             dist = struc.distance(requested_atom1, requested_atom2)
                             if len(dist) == 0:
+                                dist_list[i].append(None)
                                 missing_residue.append(i.upper())
                             else:
                                 dist_list[i].append(float(dist))
@@ -256,9 +259,12 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
     """
     plot the histogram of distances
     """
-    distances_only = list(distancesDict.values())
+    distances_only_none = np.hstack(list(distancesDict.values()))
+    distances_only = [i for i in distances_only_none if i is not None]
 
-    st.write(f'Number of structures with at least one analyzed chain {len(distancesDict)}')
+    df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in distancesDict.items()])).transpose().dropna(how='all')
+    number_structure = len(df.axes[0])
+    st.write(f'Number of structures with at least one analyzed chain {number_structure} (in {len(distances_only)} chains)')
 
     #if not os.path.exists('plots'):
     #    os.mkdir('plots')
@@ -268,7 +274,7 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
 
     fig = plt.figure(figsize=(15, 7.5))
     #plt.hist(np.hstack(distances_only), bins=100, color="skyblue", edgecolor='white')
-    plt.hist(np.hstack(distances_only), bins=100, color="skyblue", edgecolor='white')
+    plt.hist(distances_only, bins=100, color="skyblue", edgecolor='white')
 
     # sns.histplot(data=distances_only , binwidth=0.2)
     plt.xlabel('distance, A', fontsize=32)
@@ -295,7 +301,7 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
     #plt.savefig(plt_name_cum, bbox_inches='tight')
 
 
-    df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in distancesDict.items()])).transpose()
+
     df_name = './distances/distance_' + name + '_' + flag +'.csv'
     #df.to_csv(df_name)
     st.write(df)
