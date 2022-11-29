@@ -41,8 +41,7 @@ def main():
         st.sidebar.markdown("""
     """)
 
-    mutation = st.sidebar.selectbox('Are you looking for structures with a specific mutation?',
-            ('no', 'yes'))
+    mutation = st.sidebar.selectbox('Are you looking for structures with a specific mutation?', ('no', 'yes'))
 
     with st.sidebar.header(''):
         mutation_id = st.sidebar.text_input("If yes, enter a mutation aminoacid id (for example 614). If no, leave blank.")
@@ -64,7 +63,6 @@ def main():
         with st.spinner("Measuring distance"):
                 dist, dist_reverse = distance_dif( proteins, pdb_ids, resid_1, resid_2, atom_1, atom_2, mutation_name, mutation_id, flag = option)
 
-                st.header('**Histogram of distances**')
                 if option == 'different':
                     analysis(dist, resid_1, atom_1, resid_2, atom_2, 'diff1', mutation_name, mutation_id)
                     analysis(dist_reverse, resid_1, atom_1, resid_2, atom_2, 'diff2', mutation_name, mutation_id)

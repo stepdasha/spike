@@ -111,6 +111,8 @@ def pdb_files_loader(pdb_ids):
 def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_name = '', mutation_id = '', flag = 'same'):
             #print(proteins)
 
+            selection_flag = False # modify the flag if there  was at least one distance calculated
+
             dist_list = collections.defaultdict(list)  # empty dictionary for future rmsd
             dist_list_reverse = collections.defaultdict(list) # empty dictionary for future rmsd from reverse
             missing_residue = []
@@ -204,6 +206,7 @@ def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_
                                 missing_residue.append(i.upper())
                             else:
                                 #print(dist)
+                                selection_flag = True
                                 dist_list[i].append(float(dist))
 
                             #break
@@ -233,6 +236,7 @@ def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_
                                 dist_list[i].append(None)
                                 missing_residue.append(i.upper())
                             else:
+                                selection_flag = True
                                 dist_list[i].append(float(dist))
 
             st.header('**Incorrectly numbered pdbs**')
@@ -243,9 +247,14 @@ def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_
             ##f.close()
 
             if mutation_name != '':
-                st.write(f'There are {len(with_mutant)} structures with {mutation_id}{mutation_name.upper()}:', str(with_mutant))
+                if len(with_mutant) == 0:
+                    dist_list['mutation'].append(None)
+                st.write(f'There are {len(with_mutant)} structures with {mutation_id}{mutation_name.upper()}:',str(with_mutant))
 
-            st.write(st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with missing at least one of the requested atoms:', str(missing_residue)))
+            if selection_flag == True:
+                st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with missing at least one of the requested atoms:', str(missing_residue))
+            else:
+                st.write('*** Requested atoms are not found in any PDB files. Please, check your atom selection.***')
             ##error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id) + '.txt'
             ##f = open(error_file_name, "w")
             ##f.write(str(missing_residue))
@@ -262,50 +271,54 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
     distances_only_none = np.hstack(list(distancesDict.values()))
     distances_only = [i for i in distances_only_none if i is not None]
 
-    df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in distancesDict.items()])).transpose().dropna(how='all')
-    number_structure = len(df.axes[0])
-    st.write(f'Number of structures with at least one analyzed chain {number_structure} (in {len(distances_only)} chains)')
+    if len(distances_only) == 0:
+        st.write("")
+    else:
+        st.header('**Histogram of distances**')
+        df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in distancesDict.items()])).transpose().dropna(how='all')
+        number_structure = len(df.axes[0])
+        st.write(f'Number of structures with at least one analyzed chain {number_structure} (in {len(distances_only)} chains)')
 
-    #if not os.path.exists('plots'):
-    #    os.mkdir('plots')
+        #if not os.path.exists('plots'):
+        #    os.mkdir('plots')
 
-    #if not os.path.exists('distances'):
-    #    os.mkdir('distances')
+        #if not os.path.exists('distances'):
+        #    os.mkdir('distances')
 
-    fig = plt.figure(figsize=(15, 7.5))
-    #plt.hist(np.hstack(distances_only), bins=100, color="skyblue", edgecolor='white')
-    plt.hist(distances_only, bins=100, color="skyblue", edgecolor='white')
+        fig = plt.figure(figsize=(15, 7.5))
+        #plt.hist(np.hstack(distances_only), bins=100, color="skyblue", edgecolor='white')
+        plt.hist(distances_only, bins=100, color="skyblue", edgecolor='white')
 
-    # sns.histplot(data=distances_only , binwidth=0.2)
-    plt.xlabel('distance, A', fontsize=32)
-    plt.ylabel("Chains count", fontsize=32)
-    plt.xticks(fontsize=25)
-    plt.yticks(fontsize=25)
-    #plt.title("Distance distribution histogram")
-    st.pyplot(fig)
+        # sns.histplot(data=distances_only , binwidth=0.2)
+        plt.xlabel('distance, A', fontsize=32)
+        plt.ylabel("Chains count", fontsize=32)
+        plt.xticks(fontsize=25)
+        plt.yticks(fontsize=25)
+        #plt.title("Distance distribution histogram")
+        st.pyplot(fig)
 
-    name = str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id)
-    #plt_name = './plots/distance_' + name + '_' + flag + '.png'
-    #plt.savefig(plt_name, bbox_inches='tight')
-
-
-    fig2 = plt.figure(figsize=(15, 7.5))
-    plt.hist(np.hstack(distances_only), bins=100, histtype='step', cumulative=True, label='Cumulative', density=True)
-    plt.xlabel('distance, A', fontsize=32)
-    plt.ylabel("Cumulative frequency", fontsize=32)
-    plt.xticks(fontsize=25)
-    plt.yticks(fontsize=25)
-    #plt.title("Distance distribution cumulative histogram")
-    st.pyplot(fig2)
-    #plt_name_cum = './plots/distance_' + name + '_' + flag + 'cumul' + '.png'
-    #plt.savefig(plt_name_cum, bbox_inches='tight')
+        name = str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id)
+        #plt_name = './plots/distance_' + name + '_' + flag + '.png'
+        #plt.savefig(plt_name, bbox_inches='tight')
 
 
+        fig2 = plt.figure(figsize=(15, 7.5))
+        plt.hist(np.hstack(distances_only), bins=100, histtype='step', cumulative=True, label='Cumulative', density=True)
+        plt.xlabel('distance, A', fontsize=32)
+        plt.ylabel("Cumulative frequency", fontsize=32)
+        plt.xticks(fontsize=25)
+        plt.yticks(fontsize=25)
+        #plt.title("Distance distribution cumulative histogram")
+        st.pyplot(fig2)
+        #plt_name_cum = './plots/distance_' + name + '_' + flag + 'cumul' + '.png'
+        #plt.savefig(plt_name_cum, bbox_inches='tight')
 
-    df_name = './distances/distance_' + name + '_' + flag +'.csv'
-    #df.to_csv(df_name)
-    st.write(df)
-    st.markdown(filedownload(df, df_name), unsafe_allow_html=True)
+
+
+        df_name = './distances/distance_' + name + '_' + flag +'.csv'
+        #df.to_csv(df_name)
+        st.write(df)
+        st.markdown(filedownload(df, df_name), unsafe_allow_html=True)
 
 
 
