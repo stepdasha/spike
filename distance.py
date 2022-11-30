@@ -113,6 +113,8 @@ def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_
 
             selection_flag = False # modify the flag if there  was at least one distance calculated
 
+            mutation_selection_flag = True #modify flag if there are 0 structures with specified mutation
+
             dist_list = collections.defaultdict(list)  # empty dictionary for future rmsd
             dist_list_reverse = collections.defaultdict(list) # empty dictionary for future rmsd from reverse
             missing_residue = []
@@ -248,11 +250,15 @@ def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_
 
             if mutation_name != '':
                 if len(with_mutant) == 0:
+                    mutation_selection_flag = False
                     dist_list['mutation'].append(None)
+                    dist_list_reverse['mutation'].append(None)
                 st.write(f'There are {len(with_mutant)} structures with {mutation_id}{mutation_name.upper()}:',str(with_mutant))
 
             if selection_flag == True:
                 st.write(f'There are {len(missing_residue)} chains (in {len(set(missing_residue))} structures) with missing at least one of the requested atoms:', str(missing_residue))
+            elif mutation_selection_flag == False:
+                st.write('*** Please, check your mutation selection ***')
             else:
                 st.write('*** Requested atoms are not found in any PDB files. Please, check your atom selection.***')
             ##error_file_name = './error_residue/errorsPDB_' + str(resid_1) + str(atom_1) + '_' + str(resid_2) + str(atom_2) + str(mutation_name) + str(mutation_id) + '.txt'
