@@ -274,7 +274,6 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
     if len(distances_only) == 0:
         st.write("")
     else:
-        st.header('**Histogram of distances**')
         df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in distancesDict.items()])).transpose().dropna(how='all')
         number_structure = len(df.axes[0])
         st.write(f'Number of structures with at least one analyzed chain {number_structure} (in {len(distances_only)} chains)')
@@ -290,8 +289,8 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
         plt.hist(distances_only, bins=100, color="skyblue", edgecolor='white')
 
         # sns.histplot(data=distances_only , binwidth=0.2)
-        plt.xlabel('distance, A', fontsize=32)
-        plt.ylabel("Chains count", fontsize=32)
+        plt.xlabel('distance, A', fontsize=26)
+        plt.ylabel("Chains count", fontsize=26)
         plt.xticks(fontsize=25)
         plt.yticks(fontsize=25)
         #plt.title("Distance distribution histogram")
@@ -304,8 +303,8 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
 
         fig2 = plt.figure(figsize=(15, 7.5))
         plt.hist(np.hstack(distances_only), bins=100, histtype='step', cumulative=True, label='Cumulative', density=True)
-        plt.xlabel('distance, A', fontsize=32)
-        plt.ylabel("Cumulative frequency", fontsize=32)
+        plt.xlabel('distance, A', fontsize=26)
+        plt.ylabel("Cumulative frequency", fontsize=26)
         plt.xticks(fontsize=25)
         plt.yticks(fontsize=25)
         #plt.title("Distance distribution cumulative histogram")
