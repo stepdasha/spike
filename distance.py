@@ -117,7 +117,7 @@ def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_
 
             dist_list = collections.defaultdict(list)  # empty dictionary for future rmsd
             dist_list_reverse = collections.defaultdict(list) # empty dictionary for future rmsd from reverse
-            log_file = dict.fromkeys(pdb_ids, '')
+            log_file = collections.defaultdict(list)
             missing_residue = []
             missing_residue_reverse = []
             error_pdbs = []
@@ -268,6 +268,7 @@ def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_
             ##f.write(str(missing_residue_reverse))
             ##f.close()
 
+            #log_df = pd.DataFrame(dict([(k, v) for k, v in log_file.items()])).transpose()
             log_df = pd.DataFrame.from_dict(log_file, orient='index')
             st.markdown(filedownload(log_df, 'log_file.csv', 'chain names log'), unsafe_allow_html=True)
 
