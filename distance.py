@@ -18,10 +18,10 @@ import biotite.structure as struc
 #from PIL import Image
 
 # File download
-def filedownload(df, df_name):
+def filedownload(df, df_name, phrase):
     csv = df.to_csv(index=True)
     b64 = base64.b64encode(csv.encode()).decode()  # strings <-> bytes conversions
-    href = f'<a href="data:file/csv;base64,{b64}" download={df_name}>Download distribution</a>'
+    href = f'<a href="data:file/csv;base64,{b64}" download={df_name}>' + 'Download ' + phrase + ' </a>'
     return href
 
 
@@ -117,11 +117,11 @@ def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_
 
             dist_list = collections.defaultdict(list)  # empty dictionary for future rmsd
             dist_list_reverse = collections.defaultdict(list) # empty dictionary for future rmsd from reverse
+            log_file = dict.fromkeys(pdb_ids, '')
             missing_residue = []
             missing_residue_reverse = []
             error_pdbs = []
             with_mutant = []
-
             len_pdbid = len(pdb_ids)
             my_bar = st.progress(0)
             for count, i in enumerate(pdb_ids):
@@ -173,27 +173,28 @@ def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_
                 resid_1 = int(resid_1)
                 resid_2 = int(resid_2)
 
-                if flag == 'different':
+
                 #measure 2 distances to find chains orientation (clockwise/counterclockwise)
-                    chains_ordered = [chains[0]]
-                    atom_971 = protein[(protein.chain_id == chains[0]) & (protein.res_id == 971) & (protein.atom_name == 'CA')][:]
-                    atom_752_1 = protein[(protein.chain_id == chains[1]) & (protein.res_id == 752) & (protein.atom_name == 'CA')][:]
-                    atom_752_2 = protein[(protein.chain_id == chains[2]) & (protein.res_id == 752) & (protein.atom_name == 'CA')][:]
+                chains_ordered = [chains[0]]
+                atom_971 = protein[(protein.chain_id == chains[0]) & (protein.res_id == 971) & (protein.atom_name == 'CA')][:]
+                atom_752_1 = protein[(protein.chain_id == chains[1]) & (protein.res_id == 752) & (protein.atom_name == 'CA')][:]
+                atom_752_2 = protein[(protein.chain_id == chains[2]) & (protein.res_id == 752) & (protein.atom_name == 'CA')][:]
 
-                    dist1 = struc.distance(atom_971, atom_752_1)
-                    dist2 = struc.distance(atom_971, atom_752_2)
-                    #print('dist', dist1, dist2)
+                dist1 = struc.distance(atom_971, atom_752_1)
+                dist2 = struc.distance(atom_971, atom_752_2)
+                #print('dist', dist1, dist2)
 
-                    if min(dist1, dist2) == dist1:
-                        chains_ordered.append(chains[1])
-                        chains_ordered.append(chains[2])
-                        #print('clock')
-                    elif min(dist1, dist2) == dist2:
-                        chains_ordered.append(chains[2])
-                        chains_ordered.append(chains[1])
-                        #print('counterclock')
+                if min(dist1, dist2) == dist1:
+                    chains_ordered.append(chains[1])
+                    chains_ordered.append(chains[2])
+                    #print('clock')
+                elif min(dist1, dist2) == dist2:
+                    chains_ordered.append(chains[2])
+                    chains_ordered.append(chains[1])
+                    #print('counterclock')
+                log_file[i.upper()] = chains_ordered
 
-
+                if flag == 'different':
                 # measure the distance of interest
                     for j in range(0,3):
                             requested_atom1 = protein[(protein.chain_id == chains_ordered[j]) & (protein.res_id == resid_1) & (protein.atom_name == atom_1)][:]
@@ -230,7 +231,7 @@ def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_
 
 
                 elif flag == 'same':
-                    for chain in chains:
+                    for chain in chains_ordered:
                             requested_atom1 = protein[(protein.chain_id == chain) & (protein.res_id == resid_1) & (protein.atom_name == atom_1)][:]
                             requested_atom2 = protein[(protein.chain_id == chain) & (protein.res_id == resid_2) & (protein.atom_name == atom_2)][:]
                             dist = struc.distance(requested_atom1, requested_atom2)
@@ -266,6 +267,9 @@ def distance_dif(proteins, pdb_ids, resid_1,  resid_2, atom_1, atom_2, mutation_
             ##f.write(str(missing_residue))
             ##f.write(str(missing_residue_reverse))
             ##f.close()
+
+            log_df = pd.DataFrame.from_dict(log_file, orient='index')
+            st.markdown(filedownload(log_df, 'log_file.csv', 'chain names log'), unsafe_allow_html=True)
 
             return dist_list, dist_list_reverse
 
@@ -323,7 +327,7 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
         df_name = './distances/distance_' + name + '_' + flag +'.csv'
         #df.to_csv(df_name)
         st.write(df)
-        st.markdown(filedownload(df, df_name), unsafe_allow_html=True)
+        st.markdown(filedownload(df, df_name, 'distribution'), unsafe_allow_html=True)
 
 
 
