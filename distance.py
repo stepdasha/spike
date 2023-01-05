@@ -83,6 +83,7 @@ def pdb_files_loader(pdb_ids):
     if not os.path.exists('PDB'):
         os.mkdir('PDB')
 
+    st.write(f"There are new PDB files in the database. PDB files will be updated. It could take several minutes.")
     len_pdbid = len(pdb_ids)
     my_bar = st.progress(0)
 
