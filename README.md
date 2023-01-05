@@ -4,7 +4,7 @@ If you want to use it locally, you can pull the last commit from the github usin
 	git clone git@github.com:stepdasha/spike.git --depth 1
 Create the environment called 'structure' from the file environment.yml file with the following command:
 
-	conda env create --file environment.yml
+	conda env create --file conda_environment.yml
 Activate the environment with the following command:
 
 	conda activate structure
