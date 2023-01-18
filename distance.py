@@ -287,6 +287,10 @@ def analysis(distancesDict, resid_1, atom_1, resid_2, atom_2, flag, mutation_nam
         st.write("")
     else:
         df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in distancesDict.items()])).transpose().dropna(how='all')
+        if flag == 'diff1':
+            df.columns = ['0-1', '1-2', '2-0']
+        elif flag == 'diff2':
+            df.columns = ['1-0', '2-1', '0-2']
         number_structure = len(df.axes[0])
         st.write(f'Number of structures with at least one analyzed chain {number_structure} (in {len(distances_only)} chains)')
 
