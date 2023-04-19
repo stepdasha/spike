@@ -70,6 +70,7 @@ def get_spike_ids(uniprot_id="P0DTC2", min_weight=400, max_resolution=4.0):
     # remove post fusion strcuture 6xra
 
     pdb_ids.remove('6XRA')
+    pdb_ids.remove('7ZJL')
     #print(f"Number of spike structures on  {today.year}-{today.month}-{today.day} with "
     #      f"resolution less than or equal to {max_resolution} with mass more than or equal to {min_weight}: {len(pdb_ids)}")
     #print("Selected PDB IDs:\n", *pdb_ids)
